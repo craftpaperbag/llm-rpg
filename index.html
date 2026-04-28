@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>100歩の黙示録</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- タイトル画面 -->
+  <div id="title-screen" class="screen">
+    <div class="title-content">
+      <div class="title-meteor" aria-hidden="true"></div>
+      <h1 class="title-main">100歩の黙示録</h1>
+      <p class="title-sub">隕石衝突まで残り100歩</p>
+      <div class="title-buttons">
+        <button id="btn-new-game" class="title-btn">はじめから</button>
+        <button id="btn-continue" class="title-btn" style="display:none">つづきから</button>
+      </div>
+      <div id="unlocked-endings" class="endings-list" style="display:none">
+        <p class="endings-label">解放済みエンディング</p>
+        <div id="endings-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ゲーム画面 -->
+  <div id="game-screen" class="screen" style="display:none">
+    <header id="game-header">
+      <div id="steps-display">
+        <span id="meteor-icon" class="meteor-icon" aria-hidden="true">☄</span>
+        <span id="steps-count">100</span>
+        <span class="steps-slash">/</span>
+        <span class="steps-max">100</span>
+        <div id="steps-bar" role="progressbar" aria-label="残り歩数">
+          <div id="steps-fill"></div>
+        </div>
+      </div>
+      <button id="btn-mute" class="mute-btn" aria-label="ミュート切替">🔇</button>
+    </header>
+
+    <div id="meteor-shadow" class="meteor-shadow" aria-hidden="true">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="40" class="meteor-circle"/>
+      </svg>
+    </div>
+
+    <div id="noise-overlay" class="noise-overlay" aria-hidden="true"></div>
+
+    <main id="scene-area">
+      <div id="scene-fade" class="scene-fade">
+        <div id="scene-header">
+          <span id="scene-name" class="scene-name"></span>
+        </div>
+        <div id="scene-text" class="scene-text"></div>
+      </div>
+      <div id="choices-area" class="choices-area"></div>
+      <div id="items-area" class="items-area">
+        <div id="items-scroll" class="items-scroll"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- エンディング画面 -->
+  <div id="ending-screen" class="screen" style="display:none">
+    <div id="ending-content" class="ending-content">
+      <div id="ending-category" class="ending-category"></div>
+      <h2 id="ending-title" class="ending-title"></h2>
+      <div id="ending-text" class="ending-text"></div>
+      <div class="ending-actions">
+        <button id="btn-back-title" class="title-btn">タイトルへ戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
