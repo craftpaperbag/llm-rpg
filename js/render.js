@@ -14,8 +14,10 @@ const elChoices    = document.getElementById('choices-area');
 const elItemsScroll= document.getElementById('items-scroll');
 
 let typewriterId = 0;
+let uiMode = 'normal'; // 'normal' | 'result'
 
 export function renderAll() {
+  uiMode = 'normal';
   renderHeader();
   renderScene();
   renderItems();
@@ -52,9 +54,11 @@ function renderChoices(scene) {
     if (choice.hidden) return;
     if (choice.if && !choice.if(state)) return;
 
+    const isMovement = !!(choice.next && choice.next !== scene.id);
+
     const btn = document.createElement('button');
-    btn.className = 'choice-btn';
-    btn.disabled = state.steps < choice.cost;
+    btn.className = 'choice-btn ' + (isMovement ? 'choice-move' : 'choice-stay');
+    btn.disabled = state.steps <= 0;
 
     const labelEl = document.createElement('span');
     labelEl.className = 'choice-label';
@@ -70,6 +74,30 @@ function renderChoices(scene) {
     btn.addEventListener('click', () => handleChoice(choice));
     elChoices.appendChild(btn);
   });
+}
+
+function renderResultMode(text) {
+  uiMode = 'result';
+  elChoices.innerHTML = '';
+  elChoices.scrollTop = 0;
+
+  const btn = document.createElement('button');
+  btn.className = 'choice-btn next-btn';
+
+  const labelEl = document.createElement('span');
+  labelEl.className = 'choice-label';
+  labelEl.textContent = '次へ';
+  btn.appendChild(labelEl);
+
+  btn.addEventListener('click', () => {
+    playClick();
+    uiMode = 'normal';
+    const scene = scenes[state.currentScene];
+    if (scene) renderChoices(scene);
+  });
+
+  elChoices.appendChild(btn);
+  return typewriterText(elSceneText, text);
 }
 
 function renderItems() {
@@ -117,6 +145,8 @@ function applyEffects() {
 async function handleChoice(choice) {
   playClick();
 
+  const isMovement = !!(choice.next && choice.next !== state.currentScene);
+
   // 歩数消費
   state.steps = Math.max(0, state.steps - choice.cost);
 
@@ -136,24 +166,37 @@ async function handleChoice(choice) {
     return;
   }
 
-  // 次シーン判定
-  if (choice.next && choice.next !== state.currentScene) {
+  // 移動分岐
+  if (isMovement) {
     await fadeTransition();
     state.currentScene = choice.next;
     markVisited(choice.next);
+
+    renderHeader();
+    renderItems();
+    applyEffects();
+
+    const scene = scenes[state.currentScene];
+    if (scene) {
+      elSceneName.textContent = `[${scene.name}]`;
+      elChoices.scrollTop = 0;
+      renderChoices(scene);
+      await typewriterText(elSceneText, scene.text(state).trim());
+    }
+    return;
   }
 
+  // 滞在分岐: リザルトモード
   renderHeader();
   renderItems();
   applyEffects();
 
   const scene = scenes[state.currentScene];
-  if (scene) {
-    elSceneName.textContent = `[${scene.name}]`;
-    elChoices.scrollTop = 0;
-    renderChoices(scene);
-    await typewriterText(elSceneText, scene.text(state).trim());
-  }
+  if (!scene) return;
+
+  elSceneName.textContent = `[${scene.name}]`;
+  const resultText = (choice.result ? choice.result(state) : scene.text(state)).trim();
+  await renderResultMode(resultText);
 }
 
 async function typewriterText(el, text, speed = 22) {

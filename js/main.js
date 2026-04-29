@@ -63,6 +63,11 @@ function startGame() {
     muteBtn.textContent = muted ? '🔈' : '🔇';
   });
 
+  // マップボタン
+  document.getElementById('btn-map').addEventListener('click', () => {
+    import('./map.js').then(m => m.openMap());
+  });
+
   // 歩数監視 (鼓動エフェクト)
   setInterval(() => {
     startHeartbeat(state.steps);
