@@ -89,11 +89,14 @@ function renderResultMode(text) {
   labelEl.textContent = '次へ';
   btn.appendChild(labelEl);
 
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', async () => {
     playClick();
     uiMode = 'normal';
     const scene = scenes[state.currentScene];
-    if (scene) renderChoices(scene);
+    if (scene) {
+      renderChoices(scene);
+      await typewriterText(elSceneText, scene.text(state).trim());
+    }
   });
 
   elChoices.appendChild(btn);
