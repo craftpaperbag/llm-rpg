@@ -157,8 +157,8 @@ export const scenes = {
     id: 'apartment_balcony',
     name: '自宅アパート — ベランダ',
     text: () => `空は赤みを帯びている。雲の隙間から、光の筋が見えた。
-隣の部屋の住人が洗濯物を取り込んでいた。
-「今日は雨かな」と彼女はつぶやいた。
+隣の部屋のツバキが洗濯物を取り込んでいた。
+「今日は雨かな」とツバキはつぶやいた。
 隕石のことは言わなかった。主人公も言わなかった。`,
     choices: () => [
       { label: '隣の住人に声をかける', cost: 2, action: 'talkStranger', next: 'apartment_balcony' },
@@ -173,9 +173,9 @@ export const scenes = {
     name: 'コンビニ',
     text: (s) => `セブンの自動ドアが開く。店内BGMは平常運転だった。
 「いらっしゃいませ」${
-  s.flags.stoppedRobber ? '\nさっきの一件で、店員の田中さんとは顔見知りになった。' : ''
+  s.flags.stoppedRobber ? '\nさっきの一件で、店員のナギさんとは顔見知りになった。' : ''
 }${
-  s.flags.gaveCoffee ? '\nホームレスの男性の姿はもうない。' : ''
+  s.flags.gaveCoffee ? '\nテツの姿はもうない。' : ''
 }
 棚にはほとんど何も残っていなかった。水と、おでんと、缶コーヒーだけ。`,
     choices: (s) => [
@@ -187,9 +187,9 @@ export const scenes = {
         if: (s) => !s.flags.stoppedRobber },
       { label: 'レジから金を盗る', cost: 2, action: 'robRegister', next: 'convenience',
         hidden: s.flags.looted },
-      { label: '店の外のホームレスに話しかける', cost: 2, action: 'talkHomeless', next: 'convenience',
-        hidden: s.flags.gaveCoffee },
-      { label: 'ホームレスに缶コーヒーを渡す', cost: 1, action: 'giveCoffee', next: 'convenience',
+      { label: '店の外のテツに話しかける', cost: 2, action: 'talkHomeless', next: 'convenience',
+        hidden: s.flags.gaveCoffee || s.flags.talkedHomeless },
+      { label: 'テツに缶コーヒーを渡す', cost: 1, action: 'giveCoffee', next: 'convenience',
         if: (s) => s.items.includes('coffee') && !s.flags.gaveCoffee },
       { label: 'アパートへ戻る', cost: 3, next: 'apartment' },
       { label: '駅前へ向かう', cost: 3, next: 'station' },
@@ -225,11 +225,11 @@ export const scenes = {
     text: (s) => `鉄製のフェンスが半開きになっている。校庭に入れた。
 桜が咲いている。このタイミングで咲いている。${
   s.flags.metClassmate
-    ? '\n同級生の姿はもう見えない。でも何か残った気がする。'
-    : '\n遠くに見覚えのある後ろ姿がある。'
+    ? '\nカナタの姿はもう見えない。でも何か残った気がする。'
+    : '\n遠くにカナタの後ろ姿がある。'
 }`,
     choices: (s) => [
-      { label: '同級生に声をかける', cost: 3, action: 'talkClassmate', next: 'school',
+      { label: 'カナタに声をかける', cost: 3, action: 'talkClassmate', next: 'school',
         hidden: s.flags.metClassmate },
       { label: '卒業アルバムを探す', cost: 2, action: 'checkYearbook', next: 'school',
         if: (s) => s.items.includes('photo') },
@@ -244,12 +244,12 @@ export const scenes = {
     id: 'office',
     name: '職場ビル',
     text: (s) => `エレベーターは動いていた。社員証がまだ使えた。
-会議室では部長がまだ会議をしていた。スライドには「Q4予算計画」と書いてある。${
+会議室ではムラセ部長がまだ会議をしていた。スライドには「Q4予算計画」と書いてある。${
   s.flags.attendedMeeting ? '\n会議は今も続いている。終わる気配がない。' : ''
 }`,
     choices: (s) => [
       { label: '会議に参加する', cost: 3, action: 'sitInMeeting', next: 'office' },
-      { label: '部長の財布から抜く', cost: 2, action: 'stealBoss', next: 'office',
+      { label: 'ムラセ部長の財布から抜く', cost: 2, action: 'stealBoss', next: 'office',
         hidden: s.flags.looted },
       { label: '屋上へ向かう', cost: 2, next: 'rooftop' },
       { label: '母校へ戻る', cost: 5, next: 'school' },
@@ -264,7 +264,7 @@ export const scenes = {
     text: (s) => {
       const count = s.flags.meditateCount || 0;
       return `鳥居をくぐると、空気が変わる気がした。
-老神主が境内を掃き掃除している。隕石? 知ったことではないというような顔だ。${
+ジョウという老神主が境内を掃き掃除している。隕石? 知ったことではないというような顔だ。${
   count >= 1 ? `\n瞑想回数: ${count}回。心が少し軽くなった気がする。` : ''
 }${
   s.items.includes('omamori') ? '\nお守りが手の中で温かい。' : ''
@@ -308,12 +308,12 @@ export const scenes = {
     name: '総合病院',
     text: (s) => `ロビーは混雑していた。でも全員が穏やかだった。
 どこかあきらめたような、穏やかさだった。${
-  s.flags.helpedHospital ? '\n看護師さんが「ありがとう」と言った。ちゃんと聞こえた。' : ''
+  s.flags.helpedHospital ? '\nミオさんが「ありがとう」と言った。ちゃんと聞こえた。' : ''
 }${
   s.items.includes('paper') ? '\n研究論文の切れ端が、ポケットの中で折りたたまれている。' : ''
 }`,
     choices: (s) => [
-      { label: '看護師の手伝いをする', cost: 4, action: 'helpNurse', next: 'hospital',
+      { label: 'ミオさんの手伝いをする', cost: 4, action: 'helpNurse', next: 'hospital',
         hidden: s.flags.helpedHospital },
       { label: '待合室の患者と話す', cost: 2, action: 'talkStranger', next: 'hospital' },
       { label: '廊下に落ちていた論文を拾う', cost: 1, action: 'getPaper', next: 'hospital',

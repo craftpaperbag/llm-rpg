@@ -13,6 +13,8 @@ const elSceneText  = document.getElementById('scene-text');
 const elChoices    = document.getElementById('choices-area');
 const elItemsScroll= document.getElementById('items-scroll');
 
+let typewriterId = 0;
+
 export function renderAll() {
   renderHeader();
   renderScene();
@@ -141,7 +143,28 @@ async function handleChoice(choice) {
     markVisited(choice.next);
   }
 
-  renderAll();
+  renderHeader();
+  renderItems();
+  applyEffects();
+
+  const scene = scenes[state.currentScene];
+  if (scene) {
+    elSceneName.textContent = `[${scene.name}]`;
+    elChoices.scrollTop = 0;
+    renderChoices(scene);
+    await typewriterText(elSceneText, scene.text(state).trim());
+  }
+}
+
+async function typewriterText(el, text, speed = 22) {
+  const myId = ++typewriterId;
+  el.textContent = '';
+  elSceneFade.scrollTop = 0;
+  for (const char of text) {
+    if (typewriterId !== myId) return;
+    el.textContent += char;
+    if (char !== '\n' && char !== ' ') await sleep(speed);
+  }
 }
 
 async function fadeTransition() {

@@ -143,7 +143,8 @@ button {
   flex-direction: column;
   max-width: 480px;
   margin: 0 auto;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
   position: relative;
 }
 
@@ -251,13 +252,23 @@ button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 0 env(safe-area-inset-bottom, 0);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .scene-fade {
+  flex: 55 55 0;
+  overflow-y: auto;
+  min-height: 0;
   padding: 20px 16px 12px;
   transition: opacity 0.2s ease;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
+
+.scene-fade::-webkit-scrollbar { width: 4px; }
+.scene-fade::-webkit-scrollbar-thumb { background: var(--border); }
 
 .scene-fade.fading {
   opacity: 0;
@@ -282,11 +293,21 @@ button {
 
 /* 選択肢エリア */
 .choices-area {
+  flex: 45 45 0;
+  overflow-y: auto;
+  min-height: 0;
   padding: 8px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  border-top: 1px solid var(--border);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
+
+.choices-area::-webkit-scrollbar { width: 4px; }
+.choices-area::-webkit-scrollbar-thumb { background: var(--border); }
 
 .choice-btn {
   display: flex;
@@ -346,8 +367,9 @@ button {
 
 /* アイテムエリア */
 .items-area {
+  flex-shrink: 0;
   border-top: 1px solid var(--border);
-  padding: 8px 16px;
+  padding: 8px 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
   min-height: 44px;
 }
 
