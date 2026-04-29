@@ -3,8 +3,10 @@ import { renderAll } from './render.js';
 import { initAudio, toggleMute, isMuted, startHeartbeat } from './audio.js';
 import { hasSave, loadGame, clearSave, getUnlockedEndings } from './storage.js';
 import { endings } from './data/endings.js';
+import { VERSION } from './version.js';
 
 // ─── 初期化 ─────────────────────────────────────────
+document.getElementById('version-display').textContent = VERSION;
 initAudio();
 setupTitleScreen();
 

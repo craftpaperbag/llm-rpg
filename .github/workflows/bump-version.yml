@@ -1,0 +1,34 @@
+name: Bump version on main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bump patch version
+        run: |
+          VERSION_LINE=$(grep "^export const VERSION" js/version.js)
+          CURRENT=$(echo "$VERSION_LINE" | grep -oP "v\d+\.\d+\.\d+")
+          MAJOR=$(echo "$CURRENT" | cut -d. -f1 | tr -d 'v')
+          MINOR=$(echo "$CURRENT" | cut -d. -f2)
+          PATCH=$(echo "$CURRENT" | cut -d. -f3)
+          NEXT="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+          sed -i "s/${CURRENT}/${NEXT}/" js/version.js
+          echo "Bumped $CURRENT → $NEXT"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add js/version.js
+          git diff --cached --quiet || git commit -m "chore: bump version [skip ci]"
+          git push

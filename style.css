@@ -114,6 +114,15 @@ button {
   padding-top: 20px;
 }
 
+.version-display {
+  color: var(--muted);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  margin-top: 24px;
+  margin-bottom: 0;
+}
+
 .endings-label {
   color: var(--muted);
   font-size: 12px;
