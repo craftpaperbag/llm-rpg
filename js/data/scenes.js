@@ -174,7 +174,7 @@ export const scenes = {
         result: () => `「いい天気ですね」と、ありえない言葉を交わした。
 ツバキは少し笑って、洗濯物を畳み続けた。
 洗剤の香りが、赤い空に上っていった。` },
-      { label: '空を見続ける', cost: 1, action: 'meditateRiver', next: 'apartment' },
+      { label: '空を見続ける', cost: 1, action: 'meditateRiver', next: 'apartment_balcony' },
       { label: '部屋に戻る', cost: 1, next: 'apartment' },
     ],
   },
