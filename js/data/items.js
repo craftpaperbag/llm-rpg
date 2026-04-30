@@ -1,13 +1,62 @@
 export const items = {
-  key_home: { id: 'key_home', name: '実家の鍵', icon: '🔑' },
-  note:     { id: 'note',     name: '母からの未読LINE', icon: '📱' },
-  coffee:   { id: 'coffee',   name: '缶コーヒー', icon: '☕' },
-  photo:    { id: 'photo',    name: '古い写真', icon: '🖼' },
-  omamori:  { id: 'omamori',  name: 'お守り', icon: '🎋' },
-  telescope:{ id: 'telescope',name: '望遠鏡', icon: '🔭' },
-  paper:    { id: 'paper',    name: '研究論文の切れ端', icon: '📄' },
+  key_home: {
+    id: 'key_home',
+    name: '実家の鍵',
+    icon: '🔑',
+    description: `銀色の鍵。表面の塗装が手の脂で剥げている。
+何年も使っていなかったのに、ポケットの中ではいつも温かい。
+玄関の建付けが悪いので、少し持ち上げて回さないと開かない——そんなことを覚えている自分に少し驚いた。`,
+  },
+  note: {
+    id: 'note',
+    name: '母からの未読LINE',
+    icon: '📱',
+    description: `三日前の22:14。「ごはん食べてる？」
+既読をつけることが、なぜか怖かった。
+今ならわかる。返事をする側ではなく、待たせていた側だったということが。`,
+  },
+  coffee: {
+    id: 'coffee',
+    name: '缶コーヒー',
+    icon: '☕',
+    description: `ホット用の缶。常温。
+プルタブに指をかけたまま、結局あけられないでいる。
+温めてから渡したほうがいい誰かが、まだ街のどこかにいる気がする。`,
+  },
+  photo: {
+    id: 'photo',
+    name: '古い写真',
+    icon: '🖼',
+    description: `角が折れた、現像の写真。母の若い顔と、まだ髪のあった父。
+真ん中に、ひどく不機嫌な顔の子供が写っている。それが自分だ。
+ピントは少し外れている。それでも、誰かが確かにシャッターを切った瞬間がここにある。`,
+  },
+  omamori: {
+    id: 'omamori',
+    name: 'お守り',
+    icon: '🎋',
+    description: `くすんだ朱色の布袋。中に硬い何かが入っている。
+ジョウ神主が「古いやつだ」と言っていた。本当に古いらしく、紐の結び目はもうほどけそうだ。
+握ると、温度がじわりと手に移る。気のせいかもしれない。`,
+  },
+  telescope: {
+    id: 'telescope',
+    name: '望遠鏡',
+    icon: '🔭',
+    description: `屋上に置き忘れられた天体望遠鏡。三脚は錆びている。
+レンズに息を吹きかけると、誰かの指紋が浮かんだ。
+ピント合わせのダイヤルは、すでに「無限遠」に合わされていた。`,
+  },
+  paper: {
+    id: 'paper',
+    name: '研究論文の切れ端',
+    icon: '📄',
+    description: `英文の論文。"impact trajectory" の文字が見える。
+数式は半分ほどしか印字されていない——破かれた紙の端で途切れている。
+誰かが意図的にここで読むのをやめたのか、それとも続きを誰かに渡したのか。`,
+  },
 };
 
 export function getItem(id) {
-  return items[id] ?? { id, name: id, icon: '▪' };
+  return items[id] ?? { id, name: id, icon: '▪', description: '——' };
 }

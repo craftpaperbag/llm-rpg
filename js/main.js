@@ -3,6 +3,7 @@ import { renderAll } from './render.js';
 import { initAudio, toggleMute, isMuted, startHeartbeat } from './audio.js';
 import { hasSave, loadGame, clearSave, getUnlockedEndings } from './storage.js';
 import { endings } from './data/endings.js';
+import { previewEnding, isPreviewMode } from './ending.js';
 import { VERSION } from './version.js';
 
 // ─── 初期化 ─────────────────────────────────────────
@@ -22,12 +23,16 @@ function setupTitleScreen() {
     const endingsSection = document.getElementById('unlocked-endings');
     endingsSection.style.display = '';
     const grid = document.getElementById('endings-grid');
+    grid.innerHTML = '';
     unlocked.forEach(id => {
       const ending = endings.find(e => e.id === id);
       if (!ending) return;
-      const badge = document.createElement('span');
+      const badge = document.createElement('button');
+      badge.type = 'button';
       badge.className = 'ending-badge';
       badge.textContent = ending.name;
+      badge.setAttribute('aria-label', `${ending.name}のテキストを読み返す`);
+      badge.addEventListener('click', () => previewEnding(ending));
       grid.appendChild(badge);
     });
   }
@@ -47,6 +52,12 @@ function setupTitleScreen() {
   });
 
   document.getElementById('btn-back-title').addEventListener('click', () => {
+    if (isPreviewMode()) {
+      // 閲覧モード: セーブを残したままタイトルへ戻る
+      document.getElementById('ending-screen').style.display = 'none';
+      document.getElementById('title-screen').style.display = '';
+      return;
+    }
     clearSave();
     location.reload();
   });
