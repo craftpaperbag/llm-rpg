@@ -97,6 +97,25 @@ const actions = {
     setFlag('observedSky');
     addParam('truth', 2);
   },
+  noteLine(s) {
+    const n = (s.flags.lineSightings || 0) + 1;
+    setFlag('lineSightings', n);
+    setFlag('seenLine');
+    addParam('truth');
+  },
+  askTetsuLines(s) {
+    setFlag('tetsuTold');
+    addParam('truth', 2);
+    addParam('bond');
+  },
+  readPaper(s) {
+    setFlag('readPaper');
+    addParam('truth', 2);
+  },
+  decodeFormula(s) {
+    setFlag('decodedFormula');
+    addParam('truth', 2);
+  },
   callParents(s) {
     addParam('bond');
     setFlag('calledParents');
@@ -146,9 +165,17 @@ export const scenes = {
 それも要らないと思った。` },
       { label: 'PCで隕石情報を調べる', cost: 2, action: 'checkPC', next: 'apartment',
         hidden: s.flags.checkedPC,
-        result: () => `NASAの軌道データを開く。数字は冷静で、結論は冷酷だった。
+        result: () => [
+          `NASAの軌道データを開く。数字は冷静で、結論は冷酷だった。
 誤差範囲はもうない。
-画面の青白い光が、部屋を照らしている。` },
+画面の青白い光が、部屋を照らしている。`,
+          `ページを下にスクロールすると、観測ログのコメント欄に妙な書き込みがあった。
+「軌道予測の誤差が小さすぎる。0.0000000000017秒。自然現象でこの精度は出ない。」
+書き込みは深夜2時、すでに削除依頼が出されていた。`,
+          `さらに古い記事を遡る。6500万年前、2億5000万年前、6億年前——大規模絶滅の年代が、
+表で並べられていた。差を取って、引き算してみる。
+ぴったり同じ間隔だった。電卓は、最後の桁まで割り切れた。`,
+        ] },
       { label: s.flags.noteOpened ? 'LINEを読み返す' : '母からの未読LINEを開く',
         cost: 1, action: 'openNote', next: 'apartment',
         hidden: s.flags.noteOpened && !s.items.includes('note'),
@@ -165,11 +192,13 @@ export const scenes = {
   apartment_balcony: {
     id: 'apartment_balcony',
     name: '自宅アパート — ベランダ',
-    text: () => `空は赤みを帯びている。雲の隙間から、光の筋が見えた。
+    text: (s) => `空は赤みを帯びている。雲の隙間から、光の筋が見えた。
 隣の部屋のツバキが洗濯物を取り込んでいた。
 「今日は雨かな」とツバキはつぶやいた。
-隕石のことは言わなかった。主人公も言わなかった。`,
-    choices: () => [
+隕石のことは言わなかった。主人公も言わなかった。${
+  s.flags.seenLine ? '\n空には、定規で引いたようにまっすぐな白い線が、まだ残っている。' : ''
+}`,
+    choices: (s) => [
       { label: '隣の住人に声をかける', cost: 2, action: 'talkStranger', next: 'apartment_balcony',
         result: () => [
           `「いい天気ですね」と、ありえない言葉を交わした。
@@ -188,6 +217,16 @@ export const scenes = {
           `空のどこかに、黒い点のようなものが見えた気がした。
 たぶん気のせいだろう。
 気のせいだろうと、何度か自分に言い聞かせた。`,
+        ] },
+      { label: '空の白い筋を目で追う', cost: 2, action: 'noteLine', next: 'apartment_balcony',
+        hidden: s.flags.seenLine,
+        result: () => [
+          `飛行機雲ではない。風で歪んでいない。
+赤い空に、白い線が一本、定規で引いたように走っている。
+端から端まで、ぶれが——ない。`,
+          `しばらくしてから、線がもう一本、まったく平行に現れた。
+等間隔だった。物差しで測ったような等間隔。
+自然のものではない、と頭の中の何かが言った。`,
         ] },
       { label: '部屋に戻る', cost: 1, next: 'apartment' },
     ],
@@ -237,6 +276,19 @@ export const scenes = {
         result: () => `段ボールに座ったテツは、空を指さした。
 「あれが見えるか? あれが本物だ」
 よくわからないが、頷いた。` },
+      { label: 'テツに白い線のことを聞く', cost: 2, action: 'askTetsuLines', next: 'convenience',
+        if: (s) => s.flags.seenLine && s.flags.talkedHomeless && !s.flags.tetsuTold,
+        result: () => [
+          `「あの線、何ですか」と訊いた。
+テツは少しだけ笑った。歯が三本欠けていた。
+「気づいたか。ありゃな、もう三回目だよ」`,
+          `テツはコートの内ポケットから、変色した手帳を取り出した。
+ページには、年代らしい数字がびっしり並んでいた。
+1908、1947、1979、2003——どれも横棒で消され、最後に「今日」と書いてあった。`,
+          `「線は前にも出た。前の前にも出た。だがな、誰も覚えてねえんだ」
+テツは空を見上げた。目の白目が黄色くなっている。
+「お前、覚えとけよ。覚えてるやつが、たまに必要なんだ」`,
+        ] },
       { label: 'テツに缶コーヒーを渡す', cost: 1, action: 'giveCoffee', next: 'convenience',
         if: (s) => s.items.includes('coffee') && !s.flags.gaveCoffee,
         result: () => [
@@ -508,6 +560,20 @@ export const scenes = {
         result: () => `英文の研究論文。題名に「impact trajectory」の文字。
 誰かの机から滑り落ちたのだろう。
 ポケットに、畳んでしまった。` },
+      { label: '論文を読み込む', cost: 2, action: 'readPaper', next: 'hospital',
+        if: (s) => s.items.includes('paper') && !s.flags.readPaper,
+        result: () => [
+          `蛍光灯の下で論文を広げた。Abstract の最後の一行に、
+赤鉛筆で線が引いてあった。
+"the residual is statistically zero — see formula T(n)."`,
+          `余白に、誰かの手書きで途中までの数式があった。
+　　T(n) = T₀ × e^(kn)　　k = ln(?) / Ω
+?の中身は、紙の破れ目で千切れている。
+鉛筆の跡だけが、Ωの先まで何かを書こうとしていた。`,
+          `下の段に、別の筆跡で短い注記。
+「6500万年 × log? 周期は完全に等比 — 偶然ではない」
+読み終えて顔を上げると、廊下の天井灯が一拍だけ揺らいだ。`,
+        ] },
       { label: '屋上へ向かう', cost: 2, next: 'rooftop' },
       { label: '職場へ戻る', cost: 3, next: 'office' },
     ],
@@ -523,11 +589,23 @@ export const scenes = {
   s.items.includes('telescope') ? '\n望遠鏡を覗くと、表面の模様まで見えた。' : ''
 }${
   s.flags.observedSky ? '\n軌道を計算した。何かがおかしい。' : ''
+}${
+  s.flags.decodedFormula ? '\nメモの末尾に、自分の手で書いた式が残っている。Ωは「観測者」のΩだ。' : ''
 }`,
     choices: (s) => [
       { label: '空を観測する', cost: 2, action: 'observeSky', next: 'rooftop',
         if: (s) => s.items.includes('telescope'),
-        result: () => [
+        result: (st) => st.flags.readPaper ? [
+          `望遠鏡を構え、ピントを合わせ直した。
+レンズの中で、隕石の表面が見える。クレーター、亀裂、影の動き。
+あらかじめ知っていた表面の、答え合わせをしているようだった。`,
+          `論文に書かれていた T(n) = T₀ × e^(kn) を頭の中で展開する。
+レンズに張り付けた予測時刻と、自分の腕時計が、もう一秒もずれていない。
+ぴったり、ぴったり、ぴったり。`,
+          `ゼロ。誤差はゼロ。十一桁目もゼロ。
+これは現象ではない。装置だ。
+論文を書いた誰かは、これに気づいてしまったのだろう。だから紙の続きは、千切れていた。`,
+        ] : [
           `望遠鏡を構え、ピントを合わせ直した。
 レンズの中で、隕石の表面が見える。クレーター、亀裂、影の動き。
 ニュースの粗い映像とは、まるで違う質感だった。`,
@@ -537,6 +615,21 @@ export const scenes = {
           `ゼロ。誤差はゼロ。
 自然現象なら、こうはならない。
 研究論文の切れ端が、ポケットの中で熱を持っているような気がした。`,
+        ] },
+      { label: '論文と望遠鏡の値を照合する', cost: 3, action: 'decodeFormula', next: 'rooftop',
+        if: (s) => s.items.includes('telescope') && s.items.includes('paper')
+                && s.flags.observedSky && s.flags.readPaper && !s.flags.decodedFormula,
+        result: () => [
+          `望遠鏡のメモ用紙を膝の上で広げ、論文の余白と並べる。
+T(n) = T₀ × e^(kn)。
+書きかけのkの分母にΩとあった。Ωとは何か。`,
+          `スマホで「過去の大規模絶滅」を引き、年代を貼り付けていく。
+6500万年、2億5000万年、6億年——比を取ると、すべて同じ比率に揃った。
+log を取ると、線が一本、まっすぐに通った。`,
+          `Ωは観測者の総数だった。
+地球は実験装置で、滅亡はリセットだった。
+鉛筆の先が震えて、紙の上に最後の式を書いた。
+　　T(n) = T₀ × e^(kn)　　k = ln(6.5×10⁷) / Ω`,
         ] },
       { label: '望遠鏡を見つける', cost: 2, action: 'getTelescope', next: 'rooftop',
         hidden: s.items.includes('telescope'),

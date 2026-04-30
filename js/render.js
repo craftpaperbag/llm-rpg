@@ -60,7 +60,7 @@ function renderChoices(scene) {
 
     const btn = document.createElement('button');
     btn.className = 'choice-btn ' + (isMovement ? 'choice-move' : 'choice-stay');
-    btn.disabled = state.steps <= 0;
+    btn.disabled = state.steps <= 0 || state.steps < choice.cost;
 
     const labelEl = document.createElement('span');
     labelEl.className = 'choice-label';
@@ -201,6 +201,9 @@ function applyEffects() {
 async function handleChoice(choice) {
   playClick();
 
+  // 連打・歩数尽き後の誤発火を防ぐためにこの瞬間で選択肢を全部ロック
+  lockChoices();
+
   const isMovement = !!(choice.next && choice.next !== state.currentScene);
 
   // 歩数消費
@@ -275,6 +278,10 @@ async function fadeTransition() {
   elSceneFade.classList.add('fading');
   await sleep(200);
   elSceneFade.classList.remove('fading');
+}
+
+function lockChoices() {
+  elChoices.querySelectorAll('button').forEach(b => { b.disabled = true; });
 }
 
 function sleep(ms) {
