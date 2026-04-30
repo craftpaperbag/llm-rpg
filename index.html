@@ -45,10 +45,18 @@
 
     <div id="meteor-shadow" class="meteor-shadow" aria-hidden="true">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="50" r="40" class="meteor-circle"/>
+        <defs>
+          <radialGradient id="meteorGrad" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="55%" stop-color="#777777"/>
+            <stop offset="100%" stop-color="#000000"/>
+          </radialGradient>
+        </defs>
+        <circle cx="50" cy="50" r="42" class="meteor-circle"/>
       </svg>
     </div>
 
+    <div id="impact-flash" class="impact-flash" aria-hidden="true"></div>
     <div id="noise-overlay" class="noise-overlay" aria-hidden="true"></div>
 
     <main id="scene-area">

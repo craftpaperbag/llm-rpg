@@ -17,17 +17,34 @@ export function checkEnding(state) {
 async function showEnding(ending) {
   previewMode = false;
 
-  // 隕石落下演出
+  // 既存の小刻みな振動を、より重い揺れに差し替える
+  const gameScreen = document.getElementById('game-screen');
   const meteorShadow = document.getElementById('meteor-shadow');
+  const flash = document.getElementById('impact-flash');
+
+  gameScreen.classList.remove('game-shake');
+  gameScreen.classList.add('game-quake');
+
   meteorShadow.classList.add('meteor-falling');
   playMeteorFall();
 
-  await sleep(1800);
+  // 落下: 揺れながら影が膨張し続ける (3.0s)
+  await sleep(3000);
+
+  // 衝撃: 白フラッシュ → 黒に焼き付け (~1.2s)
+  if (flash) flash.classList.add('firing');
+  await sleep(1100);
+
+  // 黒の余韻 (0.5s) — 振動だけ止める
+  gameScreen.classList.remove('game-quake');
+  await sleep(500);
 
   unlockEnding(ending.id);
 
-  document.getElementById('game-screen').style.display = 'none';
+  // 黒のままゲーム画面を退場
+  gameScreen.style.display = 'none';
   meteorShadow.classList.remove('meteor-falling');
+  if (flash) flash.classList.remove('firing');
 
   paintEnding(ending);
 }

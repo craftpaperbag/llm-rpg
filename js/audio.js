@@ -110,43 +110,126 @@ export function playClick() {
   osc.stop(c.currentTime + 0.03);
 }
 
-// 隕石落下音
+// 隕石落下音 — 重く巨大な多段階演出
 export function playMeteorFall() {
   if (muted) return;
   const c = getCtx();
   if (c.state === 'suspended') return;
+  const t0 = c.currentTime;
 
-  // ホワイトノイズ + ピッチ下降
-  const bufferSize = c.sampleRate * 2;
-  const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const masterGain = c.createGain();
+  masterGain.gain.value = 0.9;
+  masterGain.connect(c.destination);
 
-  const source = c.createBufferSource();
-  source.buffer = buffer;
+  // ── Phase 1: 沈み込む地鳴り (0〜3.0s)
+  const rumbleBuf = c.createBuffer(1, c.sampleRate * 4, c.sampleRate);
+  const rumbleData = rumbleBuf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < rumbleData.length; i++) {
+    const w = Math.random() * 2 - 1;
+    last = (last + 0.005 * w) / 1.005;
+    rumbleData[i] = last * 9;
+  }
+  const rumbleSrc = c.createBufferSource();
+  rumbleSrc.buffer = rumbleBuf;
+  rumbleSrc.loop = true;
+  const rumbleLPF = c.createBiquadFilter();
+  rumbleLPF.type = 'lowpass';
+  rumbleLPF.frequency.value = 90;
+  const rumbleGain = c.createGain();
+  rumbleGain.gain.setValueAtTime(0.02, t0);
+  rumbleGain.gain.exponentialRampToValueAtTime(0.7, t0 + 2.9);
+  rumbleGain.gain.setValueAtTime(0.7, t0 + 3.0);
+  rumbleGain.gain.exponentialRampToValueAtTime(0.001, t0 + 4.6);
+  rumbleSrc.connect(rumbleLPF);
+  rumbleLPF.connect(rumbleGain);
+  rumbleGain.connect(masterGain);
+  rumbleSrc.start(t0);
+  rumbleSrc.stop(t0 + 4.7);
 
-  const osc = c.createOscillator();
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(800, c.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(80, c.currentTime + 1.8);
+  // ── Phase 2: 落下する咆哮 (sawtooth 1500→30Hz, 0〜3.0s)
+  const howl = c.createOscillator();
+  howl.type = 'sawtooth';
+  howl.frequency.setValueAtTime(1500, t0);
+  howl.frequency.exponentialRampToValueAtTime(60, t0 + 2.9);
+  const howlGain = c.createGain();
+  howlGain.gain.setValueAtTime(0.04, t0);
+  howlGain.gain.linearRampToValueAtTime(0.32, t0 + 1.8);
+  howlGain.gain.exponentialRampToValueAtTime(0.001, t0 + 3.0);
+  howl.connect(howlGain);
+  howlGain.connect(masterGain);
+  howl.start(t0);
+  howl.stop(t0 + 3.05);
 
-  const noiseGain = c.createGain();
-  noiseGain.gain.setValueAtTime(0.3, c.currentTime);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 2);
+  // ── Phase 2b: 高域シャー (空気を裂く高音、0.8〜2.8s)
+  const screechBuf = c.createBuffer(1, c.sampleRate * 2.2, c.sampleRate);
+  const screechData = screechBuf.getChannelData(0);
+  for (let i = 0; i < screechData.length; i++) screechData[i] = Math.random() * 2 - 1;
+  const screechSrc = c.createBufferSource();
+  screechSrc.buffer = screechBuf;
+  const screechBPF = c.createBiquadFilter();
+  screechBPF.type = 'bandpass';
+  screechBPF.frequency.setValueAtTime(2200, t0 + 0.8);
+  screechBPF.frequency.exponentialRampToValueAtTime(600, t0 + 2.9);
+  screechBPF.Q.value = 0.7;
+  const screechGain = c.createGain();
+  screechGain.gain.setValueAtTime(0, t0);
+  screechGain.gain.linearRampToValueAtTime(0.18, t0 + 1.6);
+  screechGain.gain.exponentialRampToValueAtTime(0.001, t0 + 3.0);
+  screechSrc.connect(screechBPF);
+  screechBPF.connect(screechGain);
+  screechGain.connect(masterGain);
+  screechSrc.start(t0 + 0.8);
+  screechSrc.stop(t0 + 3.05);
 
-  const oscGain = c.createGain();
-  oscGain.gain.setValueAtTime(0.2, c.currentTime);
-  oscGain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 1.8);
+  // ── Phase 3: 衝突の重低音 (sub-bass, 3.0〜4.5s)
+  const boom = c.createOscillator();
+  boom.type = 'sine';
+  boom.frequency.setValueAtTime(55, t0 + 2.95);
+  boom.frequency.exponentialRampToValueAtTime(18, t0 + 4.4);
+  const boomGain = c.createGain();
+  boomGain.gain.setValueAtTime(0, t0 + 2.95);
+  boomGain.gain.linearRampToValueAtTime(0.95, t0 + 3.02);
+  boomGain.gain.exponentialRampToValueAtTime(0.001, t0 + 4.5);
+  boom.connect(boomGain);
+  boomGain.connect(masterGain);
+  boom.start(t0 + 2.95);
+  boom.stop(t0 + 4.55);
 
-  source.connect(noiseGain);
-  noiseGain.connect(c.destination);
-  osc.connect(oscGain);
-  oscGain.connect(c.destination);
+  // ── Phase 3b: 衝撃ノイズバースト (3.0〜4.6s)
+  const burstBuf = c.createBuffer(1, c.sampleRate * 1.8, c.sampleRate);
+  const burstData = burstBuf.getChannelData(0);
+  for (let i = 0; i < burstData.length; i++) {
+    const decay = 1 - (i / burstData.length);
+    burstData[i] = (Math.random() * 2 - 1) * decay * decay;
+  }
+  const burstSrc = c.createBufferSource();
+  burstSrc.buffer = burstBuf;
+  const burstLPF = c.createBiquadFilter();
+  burstLPF.type = 'lowpass';
+  burstLPF.frequency.value = 320;
+  const burstGain = c.createGain();
+  burstGain.gain.setValueAtTime(0, t0 + 2.95);
+  burstGain.gain.linearRampToValueAtTime(0.85, t0 + 3.04);
+  burstGain.gain.exponentialRampToValueAtTime(0.001, t0 + 4.6);
+  burstSrc.connect(burstLPF);
+  burstLPF.connect(burstGain);
+  burstGain.connect(masterGain);
+  burstSrc.start(t0 + 2.95);
+  burstSrc.stop(t0 + 4.65);
 
-  source.start();
-  osc.start();
-  source.stop(c.currentTime + 2);
-  osc.stop(c.currentTime + 1.8);
+  // ── Phase 4: 余韻のサブハム (3.5〜5.0s)
+  const tail = c.createOscillator();
+  tail.type = 'sine';
+  tail.frequency.value = 22;
+  const tailGain = c.createGain();
+  tailGain.gain.setValueAtTime(0, t0 + 3.5);
+  tailGain.gain.linearRampToValueAtTime(0.35, t0 + 3.7);
+  tailGain.gain.exponentialRampToValueAtTime(0.001, t0 + 5.0);
+  tail.connect(tailGain);
+  tailGain.connect(masterGain);
+  tail.start(t0 + 3.5);
+  tail.stop(t0 + 5.05);
 }
 
 export function toggleMute() {
