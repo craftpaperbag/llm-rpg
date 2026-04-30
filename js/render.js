@@ -4,6 +4,7 @@ import { getItem } from './data/items.js';
 import { checkEnding } from './ending.js';
 import { playClick } from './audio.js';
 import { saveGame } from './storage.js';
+import { openItemModal } from './itemModal.js';
 
 const elStepsCount = document.getElementById('steps-count');
 const elStepsFill  = document.getElementById('steps-fill');
@@ -12,6 +13,7 @@ const elSceneName  = document.getElementById('scene-name');
 const elSceneText  = document.getElementById('scene-text');
 const elChoices    = document.getElementById('choices-area');
 const elItemsScroll= document.getElementById('items-scroll');
+const elToastArea  = document.getElementById('item-toast-area');
 
 let typewriterId = 0;
 let uiMode = 'normal'; // 'normal' | 'result'
@@ -76,31 +78,47 @@ function renderChoices(scene) {
   });
 }
 
-function renderResultMode(text) {
+function renderResultMode(beats) {
   uiMode = 'result';
-  elChoices.innerHTML = '';
-  elChoices.scrollTop = 0;
+  const pages = Array.isArray(beats) ? beats : [beats];
+  const total = pages.length;
 
-  const btn = document.createElement('button');
-  btn.className = 'choice-btn next-btn';
+  return showBeat(0);
 
-  const labelEl = document.createElement('span');
-  labelEl.className = 'choice-label';
-  labelEl.textContent = '次へ';
-  btn.appendChild(labelEl);
+  async function showBeat(idx) {
+    elChoices.innerHTML = '';
+    elChoices.scrollTop = 0;
 
-  btn.addEventListener('click', async () => {
-    playClick();
-    uiMode = 'normal';
-    const scene = scenes[state.currentScene];
-    if (scene) {
-      renderChoices(scene);
-      await typewriterText(elSceneText, scene.text(state).trim());
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn next-btn';
+    const labelEl = document.createElement('span');
+    labelEl.className = 'choice-label';
+
+    const isLast = idx === total - 1;
+    if (total > 1) {
+      labelEl.textContent = isLast ? `次へ (${idx + 1}/${total})` : `続き (${idx + 1}/${total})`;
+    } else {
+      labelEl.textContent = '次へ';
     }
-  });
+    btn.appendChild(labelEl);
 
-  elChoices.appendChild(btn);
-  return typewriterText(elSceneText, text);
+    btn.addEventListener('click', async () => {
+      playClick();
+      if (!isLast) {
+        await showBeat(idx + 1);
+        return;
+      }
+      uiMode = 'normal';
+      const scene = scenes[state.currentScene];
+      if (scene) {
+        renderChoices(scene);
+        await typewriterText(elSceneText, scene.text(state).trim());
+      }
+    });
+
+    elChoices.appendChild(btn);
+    await typewriterText(elSceneText, String(pages[idx]).trim());
+  }
 }
 
 function renderItems() {
@@ -114,11 +132,46 @@ function renderItems() {
   }
   state.items.forEach(id => {
     const item = getItem(id);
-    const chip = document.createElement('span');
+    const chip = document.createElement('button');
     chip.className = 'item-chip';
+    chip.type = 'button';
+    chip.setAttribute('aria-label', `${item.name}の詳細を見る`);
     chip.textContent = `${item.icon} ${item.name}`;
+    chip.addEventListener('click', () => {
+      playClick();
+      openItemModal(id);
+    });
     elItemsScroll.appendChild(chip);
   });
+}
+
+function showItemToast(id) {
+  const item = getItem(id);
+  const toast = document.createElement('div');
+  toast.className = 'item-toast';
+  toast.setAttribute('role', 'status');
+
+  const label = document.createElement('span');
+  label.className = 'item-toast-label';
+  label.textContent = '入手';
+
+  const body = document.createElement('span');
+  body.className = 'item-toast-body';
+  body.textContent = `${item.icon} ${item.name}`;
+
+  toast.appendChild(label);
+  toast.appendChild(body);
+  elToastArea.appendChild(toast);
+
+  // フェードイン
+  requestAnimationFrame(() => toast.classList.add('show'));
+
+  // 自動消去
+  setTimeout(() => {
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    setTimeout(() => toast.remove(), 400);
+  }, 2200);
 }
 
 function applyEffects() {
@@ -153,14 +206,19 @@ async function handleChoice(choice) {
   // 歩数消費
   state.steps = Math.max(0, state.steps - choice.cost);
 
-  // アクション実行
+  // アクション実行 (新規アイテム検出のため前後で差分を取る)
+  const before = new Set(state.items);
   if (choice.action) runAction(choice.action, state);
+  const newItems = state.items.filter(id => !before.has(id));
 
   // 訪問記録
   if (choice.next) markVisited(choice.next);
 
   // オートセーブ
   saveGame(state);
+
+  // アイテム取得トースト
+  newItems.forEach(showItemToast);
 
   // エンディング判定
   if (state.steps <= 0) {
@@ -198,8 +256,8 @@ async function handleChoice(choice) {
   if (!scene) return;
 
   elSceneName.textContent = `[${scene.name}]`;
-  const resultText = (choice.result ? choice.result(state) : scene.text(state)).trim();
-  await renderResultMode(resultText);
+  const resultPayload = choice.result ? choice.result(state) : scene.text(state);
+  await renderResultMode(resultPayload);
 }
 
 async function typewriterText(el, text, speed = 22) {
