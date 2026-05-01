@@ -1,6 +1,6 @@
 export const initialState = () => ({
   steps: 100,
-  currentScene: 'apartment',
+  currentScene: 'opening',
   items: ['key_home', 'note'],
   params: { bond: 0, nihil: 0, wrath: 0, hope: 0, truth: 0 },
   flags: {},

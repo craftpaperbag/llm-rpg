@@ -188,14 +188,6 @@ function applyEffects() {
   } else {
     noise.classList.remove('active');
   }
-
-  // 振動
-  const gameScreen = document.getElementById('game-screen');
-  if (state.steps <= 10) {
-    gameScreen.classList.add('game-shake');
-  } else {
-    gameScreen.classList.remove('game-shake');
-  }
 }
 
 async function handleChoice(choice) {

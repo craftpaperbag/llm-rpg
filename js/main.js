@@ -39,7 +39,7 @@ function setupTitleScreen() {
 
   document.getElementById('btn-new-game').addEventListener('click', () => {
     resetState();
-    markVisited('apartment');
+    markVisited('opening');
     startGame();
   });
 
