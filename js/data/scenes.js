@@ -134,6 +134,7 @@ const actions = {
   },
   meditateRiver(s) {
     addParam('nihil');
+    setFlag('seenDot');
   },
   yell(s) {
     addParam('wrath');
@@ -146,6 +147,21 @@ export function runAction(name, s) {
 
 // シーン定義
 export const scenes = {
+  // ─── プロローグ ───
+  opening: {
+    id: 'opening',
+    name: 'プロローグ',
+    text: (s) => `ニュースは三日前から同じ映像を流している。
+小惑星の軌道は逸れず、衝突予測時刻は今日の深夜。
+逃げ場はない。地球の裏側でも結果は同じだと、誰かが言っていた。
+気がつくと、自分の足で歩ける距離を数えていた。
+たぶん、あと百歩くらいだろう。
+百歩のあいだに、何をするかは、まだ決めていない。`,
+    choices: (s) => [
+      { label: '歩き出す', cost: 0, next: 'apartment' },
+    ],
+  },
+
   // ─── 自宅アパート ───
   apartment: {
     id: 'apartment',
@@ -197,6 +213,14 @@ export const scenes = {
 「今日は雨かな」とツバキはつぶやいた。
 隕石のことは言わなかった。主人公も言わなかった。${
   s.flags.seenLine ? '\n空には、定規で引いたようにまっすぐな白い線が、まだ残っている。' : ''
+}${
+  s.flags.seenDot ? '\n' + (
+    s.steps > 50
+      ? 'あの黒い点はまだ消えない。気のせいではなかったのかもしれない。'
+      : s.steps > 20
+        ? '黒い点は、わずかに大きく見える。瞬きをしても消えない。'
+        : 'もう、気のせいで済むサイズではなかった。'
+  ) : ''
 }`,
     choices: (s) => [
       { label: '隣の住人に声をかける', cost: 2, action: 'talkStranger', next: 'apartment_balcony',
