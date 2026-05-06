@@ -23,6 +23,8 @@ html, body {
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 button {
@@ -103,7 +105,7 @@ button {
   min-height: 56px;
 }
 
-.title-btn:hover, .title-btn:active {
+.title-btn:active {
   background: var(--fg);
   color: var(--bg);
 }
@@ -219,7 +221,6 @@ button {
   justify-content: center;
 }
 
-.mute-btn:hover { opacity: 1; }
 .mute-btn.muted { opacity: 0.3; }
 
 .map-btn {
@@ -237,8 +238,6 @@ button {
   border: none;
   cursor: pointer;
 }
-
-.map-btn:hover { opacity: 1; }
 
 /* 隕石の影 */
 .meteor-shadow {
@@ -362,12 +361,12 @@ button {
   margin-right: 4px;
 }
 
-.choice-btn:hover, .choice-btn:active {
+.choice-btn:active {
   background: var(--fg);
   color: var(--bg);
 }
 
-.choice-btn:hover::before, .choice-btn:active::before {
+.choice-btn:active::before {
   color: var(--bg);
 }
 
@@ -383,7 +382,6 @@ button {
   white-space: nowrap;
 }
 
-.choice-btn:hover .choice-cost,
 .choice-btn:active .choice-cost {
   color: var(--bg);
   opacity: 0.6;
@@ -452,7 +450,7 @@ button {
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.item-chip:hover, .item-chip:active {
+.item-chip:active {
   background: var(--fg);
   color: var(--bg);
   border-color: var(--fg);
@@ -712,11 +710,6 @@ button {
   z-index: 2;
 }
 
-.map-close:hover {
-  background: var(--fg);
-  color: var(--bg);
-}
-
 /* アイテム詳細モーダル */
 .item-overlay {
   position: fixed;
@@ -756,11 +749,6 @@ button {
   border: 1px solid var(--border);
   color: var(--fg);
   cursor: pointer;
-}
-
-.item-close:hover {
-  background: var(--fg);
-  color: var(--bg);
 }
 
 .item-modal-icon {
@@ -849,8 +837,47 @@ button.ending-badge {
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-button.ending-badge:hover, button.ending-badge:active {
+button.ending-badge:active {
   background: var(--fg);
   color: var(--bg);
   border-color: var(--fg);
+}
+
+/* ===== ホバー演出: マウス操作デバイス限定 ===== */
+@media (hover: hover) {
+  .title-btn:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .mute-btn:hover { opacity: 1; }
+  .map-btn:hover { opacity: 1; }
+  .choice-btn:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .choice-btn:hover::before {
+    color: var(--bg);
+  }
+  .choice-btn:hover .choice-cost {
+    color: var(--bg);
+    opacity: 0.6;
+  }
+  .item-chip:hover {
+    background: var(--fg);
+    color: var(--bg);
+    border-color: var(--fg);
+  }
+  .map-close:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .item-close:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  button.ending-badge:hover {
+    background: var(--fg);
+    color: var(--bg);
+    border-color: var(--fg);
+  }
 }
