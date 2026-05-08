@@ -880,4 +880,164 @@ button.ending-badge:active {
     color: var(--bg);
     border-color: var(--fg);
   }
+  .cine-skip:hover {
+    opacity: 1;
+    border-color: var(--fg);
+  }
+}
+
+/* ===== オープニング・シネマティック ===== */
+#opening-cinematic {
+  position: fixed;
+  inset: 0;
+  background: #0a0a0a;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 1s ease-out;
+}
+
+#opening-cinematic.cine-visible {
+  opacity: 1;
+}
+
+/* 星々 — ごく淡いドットを背景に散らす */
+.cine-sky {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 17% 22%,  rgba(240,240,240,0.55), transparent 60%),
+    radial-gradient(1px 1px at 73% 14%,  rgba(240,240,240,0.40), transparent 60%),
+    radial-gradient(1px 1px at 41% 38%,  rgba(240,240,240,0.30), transparent 60%),
+    radial-gradient(1px 1px at 88% 47%,  rgba(240,240,240,0.45), transparent 60%),
+    radial-gradient(1px 1px at 12% 64%,  rgba(240,240,240,0.30), transparent 60%),
+    radial-gradient(1px 1px at 56% 71%,  rgba(240,240,240,0.40), transparent 60%),
+    radial-gradient(1px 1px at 29% 83%,  rgba(240,240,240,0.30), transparent 60%),
+    radial-gradient(1px 1px at 81% 88%,  rgba(240,240,240,0.55), transparent 60%),
+    radial-gradient(1px 1px at 64% 31%,  rgba(240,240,240,0.25), transparent 60%),
+    radial-gradient(1px 1px at 8%  41%,  rgba(240,240,240,0.35), transparent 60%);
+  animation: starTwinkle 6s ease-in-out infinite;
+}
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.85; }
+}
+
+/* 隕石 — 中央上部から接近 */
+.cine-meteor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40vmin;
+  height: 40vmin;
+  margin-left: -20vmin;
+  margin-top: -20vmin;
+  pointer-events: none;
+  transform: translate(0, -38vh) scale(0.04);
+  opacity: 0;
+  filter: drop-shadow(0 0 4px rgba(240,240,240,0.4));
+}
+
+.cine-meteor svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.cine-meteor.cine-falling {
+  animation: meteorOpeningApproach 13s cubic-bezier(0.4, 0.0, 0.7, 1) forwards;
+}
+
+@keyframes meteorOpeningApproach {
+  0% {
+    transform: translate(0, -38vh) scale(0.04);
+    opacity: 0;
+    filter: drop-shadow(0 0 4px rgba(240,240,240,0.3));
+  }
+  12% {
+    opacity: 0.5;
+  }
+  30% {
+    transform: translate(-1vw, -28vh) scale(0.12);
+    opacity: 0.7;
+    filter: drop-shadow(0 0 10px rgba(240,240,240,0.45));
+  }
+  55% {
+    transform: translate(-3vw, -14vh) scale(0.45);
+    opacity: 0.85;
+    filter: drop-shadow(0 0 22px rgba(240,240,240,0.55));
+  }
+  78% {
+    transform: translate(-6vw, 0) scale(1.4);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 60px rgba(240,240,240,0.7));
+  }
+  92% {
+    transform: translate(-9vw, 8vh) scale(3.2);
+    opacity: 1;
+    filter: drop-shadow(0 0 120px rgba(240,240,240,0.85));
+  }
+  100% {
+    transform: translate(-11vw, 12vh) scale(5);
+    opacity: 1;
+    filter: drop-shadow(0 0 180px rgba(240,240,240,1));
+  }
+}
+
+/* ナレーション */
+.cine-narration {
+  position: absolute;
+  left: 50%;
+  bottom: max(15vh, calc(env(safe-area-inset-bottom, 0px) + 96px));
+  transform: translateX(-50%);
+  width: min(86vw, 440px);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: clamp(13px, 4vw, 16px);
+  letter-spacing: 0.12em;
+  line-height: 1.9;
+  color: var(--fg);
+  pointer-events: none;
+  text-shadow: 0 0 8px rgba(10,10,10,0.9), 0 0 20px rgba(10,10,10,0.7);
+  z-index: 2;
+}
+
+.cine-line {
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+
+.cine-line.fade-out {
+  opacity: 0;
+}
+
+/* スキップボタン */
+.cine-skip {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  min-height: 44px;
+  min-width: 88px;
+  background: rgba(10,10,10,0.5);
+  opacity: 0.55;
+  z-index: 3;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+
+.cine-skip:active {
+  opacity: 1;
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
 }
