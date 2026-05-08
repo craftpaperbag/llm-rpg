@@ -37,10 +37,13 @@ function setupTitleScreen() {
     });
   }
 
-  document.getElementById('btn-new-game').addEventListener('click', () => {
+  document.getElementById('btn-new-game').addEventListener('click', async () => {
     resetState();
     markVisited('opening');
-    startGame();
+    document.getElementById('title-screen').style.display = 'none';
+    const { playOpeningCinematic } = await import('./opening.js');
+    await playOpeningCinematic();
+    startGame({ typewriter: true });
   });
 
   btnContinue.addEventListener('click', () => {
@@ -64,7 +67,7 @@ function setupTitleScreen() {
 }
 
 // ─── ゲーム開始 ─────────────────────────────────────
-function startGame() {
+function startGame({ typewriter = false } = {}) {
   document.getElementById('title-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
 
@@ -86,5 +89,5 @@ function startGame() {
     startHeartbeat(state.steps);
   }, 2000);
 
-  renderAll();
+  renderAll({ typewriter });
 }
