@@ -125,6 +125,17 @@ const actions = {
     addParam('hope');
     setFlag('talkedStranger');
   },
+  talkTsubaki(s) {
+    addParam('bond');
+    addParam('hope');
+    setFlag('talkedStranger');
+    setFlag('tsubakiLeft');
+  },
+  watchSkyBalcony(s) {
+    addParam('nihil');
+    setFlag('seenDot');
+    setFlag('tsubakiLeft');
+  },
   talkPreacher(s) {
     addParam('nihil');
   },
@@ -186,11 +197,12 @@ export const scenes = {
 誤差範囲はもうない。
 画面の青白い光が、部屋を照らしている。`,
           `ページを下にスクロールすると、観測ログのコメント欄に妙な書き込みがあった。
-「軌道予測の誤差が小さすぎる。0.0000000000017秒。自然現象でこの精度は出ない。」
+「軌道予測の誤差が小さすぎる。0.0000000000017秒——」
 書き込みは深夜2時、すでに削除依頼が出されていた。`,
-          `さらに古い記事を遡る。隕石サンプルの同位体分析データ。
-ツングースカ、シホテアリン、吉林、チェリャビンスク——イリジウム比、Pt-Os比、
-小数点以下8桁まで完全に一致。同じ天体の破片だった。`,
+          `コメント欄をさらに遡る。
+似たような書き込みが、過去の隕石記事にもあった。
+ツングースカ、シホテアリン、吉林、チェリャビンスク——
+そのどれもが、同じように、誰かの手で削除されていた。`,
         ] },
       { label: s.flags.noteOpened ? 'LINEを読み返す' : '母からの未読LINEを開く',
         cost: 1, action: 'openNote', next: 'apartment',
@@ -209,9 +221,11 @@ export const scenes = {
     id: 'apartment_balcony',
     name: '自宅アパート — ベランダ',
     text: (s) => `空は赤みを帯びている。雲の隙間から、光の筋が見えた。
-隣の部屋のツバキが洗濯物を取り込んでいた。
+${s.flags.tsubakiLeft
+  ? '隣の部屋の窓は、もう閉まっている。\n物干し竿だけが、風で揺れている。'
+  : `隣の部屋のツバキが洗濯物を取り込んでいた。
 「今日は雨かな」とツバキはつぶやいた。
-隕石のことは言わなかった。主人公も言わなかった。${
+隕石のことは言わなかった。主人公も言わなかった。`}${
   s.flags.seenLine ? '\n空には、定規で引いたようにまっすぐな白い線が、まだ残っている。' : ''
 }${
   s.flags.seenDot ? '\n' + (
@@ -223,7 +237,8 @@ export const scenes = {
   ) : ''
 }`,
     choices: (s) => [
-      { label: '隣の住人に声をかける', cost: 2, action: 'talkStranger', next: 'apartment_balcony',
+      { label: '隣の住人に声をかける', cost: 2, action: 'talkTsubaki', next: 'apartment_balcony',
+        hidden: s.flags.tsubakiLeft,
         result: () => [
           `「いい天気ですね」と、ありえない言葉を交わした。
 ツバキは少し笑って、洗濯物を畳み続けた。
@@ -233,7 +248,7 @@ export const scenes = {
 「私もです」とツバキは笑った。バカみたいな会話だと思った。
 バカみたいな会話を、最後にしておきたかった。`,
         ] },
-      { label: '空を見続ける', cost: 1, action: 'meditateRiver', next: 'apartment_balcony',
+      { label: '空を見続ける', cost: 1, action: 'watchSkyBalcony', next: 'apartment_balcony',
         result: () => [
           `手すりが冷たい。両手を置いたまま、空を見続けた。
 赤の中に、薄い橙が混ざっている。日没の色とは違う。
