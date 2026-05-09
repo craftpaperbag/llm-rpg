@@ -898,6 +898,30 @@ button {
   color: var(--bg);
 }
 
+.settings-action-btn {
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 3vw, 12px);
+  letter-spacing: 0.1em;
+  padding: 8px 14px;
+  min-height: 36px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.settings-action-btn:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
+.settings-action-btn.armed {
+  color: var(--bg);
+  background: var(--fg);
+  border-color: var(--fg);
+}
+
 /* 作品紹介モーダル */
 .about-modal {
   text-align: left;

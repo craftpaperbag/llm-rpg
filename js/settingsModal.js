@@ -1,9 +1,14 @@
 import { setTheme, getCurrentTheme } from './theme.js';
 import { toggleMute, isMuted } from './audio.js';
+import { giveUp } from './render.js';
 
 let overlayEl = null;
 let themeSegEl = null;
 let muteSegEl = null;
+let giveUpRowEl = null;
+let giveUpBtnEl = null;
+let giveUpArmed = false;
+let giveUpResetTimer = null;
 
 function build() {
   if (overlayEl) return;
@@ -57,6 +62,23 @@ function build() {
     },
   });
   modal.appendChild(muteSegEl.row);
+
+  giveUpRowEl = document.createElement('div');
+  giveUpRowEl.className = 'settings-row settings-row-action';
+
+  const giveUpLabel = document.createElement('div');
+  giveUpLabel.className = 'settings-row-label';
+  giveUpLabel.textContent = '諦める';
+  giveUpRowEl.appendChild(giveUpLabel);
+
+  giveUpBtnEl = document.createElement('button');
+  giveUpBtnEl.type = 'button';
+  giveUpBtnEl.className = 'settings-action-btn';
+  giveUpBtnEl.textContent = 'ここで終わる';
+  giveUpBtnEl.addEventListener('click', handleGiveUpClick);
+  giveUpRowEl.appendChild(giveUpBtnEl);
+
+  modal.appendChild(giveUpRowEl);
 
   overlayEl.appendChild(modal);
 
@@ -121,13 +143,46 @@ function syncGameMuteIcon() {
   }
 }
 
+function isGameActive() {
+  const gameScreen = document.getElementById('game-screen');
+  return !!gameScreen && gameScreen.style.display !== 'none';
+}
+
+function resetGiveUp() {
+  giveUpArmed = false;
+  if (giveUpResetTimer) {
+    clearTimeout(giveUpResetTimer);
+    giveUpResetTimer = null;
+  }
+  if (giveUpBtnEl) {
+    giveUpBtnEl.textContent = 'ここで終わる';
+    giveUpBtnEl.classList.remove('armed');
+  }
+}
+
+function handleGiveUpClick() {
+  if (!giveUpArmed) {
+    giveUpArmed = true;
+    giveUpBtnEl.textContent = 'もう一度押すと確定';
+    giveUpBtnEl.classList.add('armed');
+    giveUpResetTimer = setTimeout(resetGiveUp, 4000);
+    return;
+  }
+  resetGiveUp();
+  closeSettings();
+  giveUp();
+}
+
 export function openSettings() {
   build();
   updateThemeSegment();
   updateMuteSegment();
+  resetGiveUp();
+  giveUpRowEl.style.display = isGameActive() ? '' : 'none';
   overlayEl.hidden = false;
 }
 
 export function closeSettings() {
   if (overlayEl) overlayEl.hidden = true;
+  resetGiveUp();
 }
