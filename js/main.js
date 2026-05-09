@@ -93,6 +93,16 @@ function startGame({ typewriter = false } = {}) {
     import('./map.js').then(m => m.openMap());
   });
 
+  // 持ち物ボタン
+  document.getElementById('btn-inventory').addEventListener('click', () => {
+    import('./inventoryModal.js').then(m => m.openInventory());
+  });
+
+  // 人物ボタン
+  document.getElementById('btn-characters').addEventListener('click', () => {
+    import('./charactersModal.js').then(m => m.openCharacters());
+  });
+
   // 歩数監視 (鼓動エフェクト)
   setInterval(() => {
     startHeartbeat(state.steps);
