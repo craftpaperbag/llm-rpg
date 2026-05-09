@@ -11,6 +11,7 @@
 <body>
   <!-- タイトル画面 -->
   <div id="title-screen" class="screen">
+    <button id="btn-title-settings" class="title-icon-btn" type="button" aria-label="設定">⚙</button>
     <div class="title-content">
       <div class="title-meteor" aria-hidden="true"></div>
       <h1 class="title-main">100歩の黙示録</h1>
@@ -18,6 +19,7 @@
       <div class="title-buttons">
         <button id="btn-new-game" class="title-btn">はじめから</button>
         <button id="btn-continue" class="title-btn" style="display:none">つづきから</button>
+        <button id="btn-about" class="title-btn title-btn-sub">作品について</button>
       </div>
       <p id="version-display" class="version-display"></p>
       <div id="unlocked-endings" class="endings-list" style="display:none">
@@ -59,7 +61,7 @@
         </div>
       </div>
       <button id="btn-map" class="map-btn" aria-label="マップ">▦</button>
-      <button id="btn-mute" class="mute-btn" aria-label="ミュート切替">🔇</button>
+      <button id="btn-settings" class="settings-btn" aria-label="設定">⚙</button>
     </header>
 
     <div id="meteor-shadow" class="meteor-shadow" aria-hidden="true">

@@ -1,12 +1,14 @@
 import { state, resetState, loadState, markVisited } from './state.js';
 import { renderAll } from './render.js';
-import { initAudio, toggleMute, isMuted, startHeartbeat } from './audio.js';
+import { initAudio, startHeartbeat } from './audio.js';
 import { hasSave, loadGame, clearSave, getUnlockedEndings } from './storage.js';
 import { endings } from './data/endings.js';
 import { previewEnding, isPreviewMode } from './ending.js';
 import { VERSION } from './version.js';
+import { initTheme } from './theme.js';
 
 // ─── 初期化 ─────────────────────────────────────────
+initTheme();
 document.getElementById('version-display').textContent = VERSION;
 initAudio();
 setupTitleScreen();
@@ -64,6 +66,14 @@ function setupTitleScreen() {
     clearSave();
     location.reload();
   });
+
+  document.getElementById('btn-title-settings').addEventListener('click', () => {
+    import('./settingsModal.js').then(m => m.openSettings());
+  });
+
+  document.getElementById('btn-about').addEventListener('click', () => {
+    import('./aboutModal.js').then(m => m.openAbout());
+  });
 }
 
 // ─── ゲーム開始 ─────────────────────────────────────
@@ -71,12 +81,9 @@ function startGame({ typewriter = false } = {}) {
   document.getElementById('title-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
 
-  // ミュートボタン
-  const muteBtn = document.getElementById('btn-mute');
-  muteBtn.addEventListener('click', () => {
-    const muted = toggleMute();
-    muteBtn.classList.toggle('muted', muted);
-    muteBtn.textContent = muted ? '🔈' : '🔇';
+  // 設定ボタン (テーマ・音声トグル)
+  document.getElementById('btn-settings').addEventListener('click', () => {
+    import('./settingsModal.js').then(m => m.openSettings());
   });
 
   // マップボタン
