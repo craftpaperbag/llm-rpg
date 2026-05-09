@@ -11,11 +11,6 @@ html[data-theme="dark"] {
   --fg: #f0f0f0;
   --muted: #666;
   --border: #333;
-  --meteor-hi: #6a6a6a;
-  --meteor-mid: #1a1a1a;
-  --meteor-lo: #050505;
-  --meteor-shadow-1: rgba(0, 0, 0, 0.7);
-  --meteor-shadow-2: rgba(0, 0, 0, 0.4);
   --overlay-bg: rgba(10, 10, 10, 0.92);
   --font-main: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
   --font-mono: 'Noto Sans Mono CJK JP', 'Courier New', monospace;
@@ -26,11 +21,6 @@ html[data-theme="light"] {
   --fg: #1a1a1a;
   --muted: #888;
   --border: #c8c8c8;
-  --meteor-hi: #4a4a4a;
-  --meteor-mid: #1a1a1a;
-  --meteor-lo: #050505;
-  --meteor-shadow-1: rgba(0, 0, 0, 0.35);
-  --meteor-shadow-2: rgba(0, 0, 0, 0.2);
   --overlay-bg: rgba(240, 240, 240, 0.92);
 }
 
@@ -85,10 +75,7 @@ button {
   height: 96px;
   margin: 0 auto 28px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, var(--meteor-hi), var(--meteor-mid) 55%, var(--meteor-lo));
-  box-shadow:
-    0 18px 28px -8px var(--meteor-shadow-1),
-    0 0 36px var(--meteor-shadow-2);
+  background: var(--fg);
   animation: meteor-breath 12s ease-in-out infinite;
 }
 
@@ -305,7 +292,7 @@ button {
   cursor: pointer;
 }
 
-/* 隕石の影 */
+/* 隕石の影 — フラットな円 (陰影なし) */
 .meteor-shadow {
   position: fixed;
   top: -60px;
@@ -315,13 +302,9 @@ button {
   pointer-events: none;
   z-index: 200;
   transition: transform 0.5s ease, opacity 0.5s ease;
-  opacity: 0.15;
+  opacity: 0.18;
   transform-origin: 65% 35%;
-  filter: drop-shadow(0 0 12px rgba(0,0,0,0.7));
-}
-
-.meteor-circle {
-  fill: url(#meteorGrad);
+  color: var(--fg);
 }
 
 /* ノイズオーバーレイ */
@@ -609,37 +592,31 @@ button {
   animation: massiveQuake 0.18s linear infinite;
 }
 
-/* 隕石落下演出 — 多段階で巨大感を出す */
+/* 隕石落下演出 — 多段階で巨大感を出す (陰影なし) */
 @keyframes meteorApproach {
   0% {
     transform: translate(0, 0) scale(1);
     opacity: 0.18;
-    filter: drop-shadow(0 0 12px rgba(0,0,0,0.7));
   }
   20% {
     transform: translate(-3vw, 3vh) scale(2.2);
     opacity: 0.45;
-    filter: drop-shadow(0 0 28px rgba(0,0,0,0.85));
   }
   55% {
     transform: translate(-10vw, 12vh) scale(6);
     opacity: 0.78;
-    filter: drop-shadow(0 0 44px rgba(255,255,255,0.15));
   }
   78% {
     transform: translate(-22vw, 26vh) scale(14);
     opacity: 0.95;
-    filter: drop-shadow(0 0 80px rgba(255,255,255,0.35));
   }
   92% {
     transform: translate(-35vw, 40vh) scale(28);
     opacity: 1;
-    filter: drop-shadow(0 0 140px rgba(255,255,255,0.6));
   }
   100% {
     transform: translate(-45vw, 55vh) scale(48);
     opacity: 1;
-    filter: drop-shadow(0 0 200px rgba(255,255,255,0.9));
   }
 }
 
@@ -1090,7 +1067,8 @@ button.ending-badge:active {
   }
   .cine-skip:hover {
     opacity: 1;
-    border-color: var(--fg);
+    color: #f0f0f0;
+    border-color: #f0f0f0;
   }
 }
 
@@ -1136,19 +1114,19 @@ button.ending-badge:active {
   50%      { opacity: 0.85; }
 }
 
-/* 隕石 — 中央上部から接近 */
+/* 隕石 — 巨大な円が陰影なしでゆっくり迫る (圧迫感) */
 .cine-meteor {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 40vmin;
-  height: 40vmin;
-  margin-left: -20vmin;
-  margin-top: -20vmin;
+  width: 70vmin;
+  height: 70vmin;
+  margin-left: -35vmin;
+  margin-top: -35vmin;
   pointer-events: none;
-  transform: translate(0, -38vh) scale(0.04);
+  transform: scale(0.95);
   opacity: 0;
-  filter: drop-shadow(0 0 4px rgba(240,240,240,0.4));
+  color: #000;
 }
 
 .cine-meteor svg {
@@ -1158,46 +1136,24 @@ button.ending-badge:active {
 }
 
 .cine-meteor.cine-falling {
-  animation: meteorOpeningApproach 13s cubic-bezier(0.4, 0.0, 0.7, 1) forwards;
+  animation: meteorOpeningApproach 13s linear forwards;
 }
 
 @keyframes meteorOpeningApproach {
   0% {
-    transform: translate(0, -38vh) scale(0.04);
+    transform: scale(0.95);
     opacity: 0;
-    filter: drop-shadow(0 0 4px rgba(240,240,240,0.3));
   }
-  12% {
-    opacity: 0.5;
-  }
-  30% {
-    transform: translate(-1vw, -28vh) scale(0.12);
-    opacity: 0.7;
-    filter: drop-shadow(0 0 10px rgba(240,240,240,0.45));
-  }
-  55% {
-    transform: translate(-3vw, -14vh) scale(0.45);
+  10% {
     opacity: 0.85;
-    filter: drop-shadow(0 0 22px rgba(240,240,240,0.55));
-  }
-  78% {
-    transform: translate(-6vw, 0) scale(1.4);
-    opacity: 0.95;
-    filter: drop-shadow(0 0 60px rgba(240,240,240,0.7));
-  }
-  92% {
-    transform: translate(-9vw, 8vh) scale(3.2);
-    opacity: 1;
-    filter: drop-shadow(0 0 120px rgba(240,240,240,0.85));
   }
   100% {
-    transform: translate(-11vw, 12vh) scale(5);
+    transform: scale(3.4);
     opacity: 1;
-    filter: drop-shadow(0 0 180px rgba(240,240,240,1));
   }
 }
 
-/* ナレーション */
+/* ナレーション — シネマティック背景は常に暗いのでテーマ非依存の明色固定 */
 .cine-narration {
   position: absolute;
   left: 50%;
@@ -1209,7 +1165,7 @@ button.ending-badge:active {
   font-size: clamp(13px, 4vw, 16px);
   letter-spacing: 0.12em;
   line-height: 1.9;
-  color: var(--fg);
+  color: #f0f0f0;
   pointer-events: none;
   text-shadow: 0 0 8px rgba(10,10,10,0.9), 0 0 20px rgba(10,10,10,0.7);
   z-index: 2;
@@ -1224,7 +1180,7 @@ button.ending-badge:active {
   opacity: 0;
 }
 
-/* スキップボタン */
+/* スキップボタン — シネマティック背景は常に暗いのでテーマ非依存 */
 .cine-skip {
   position: absolute;
   right: max(16px, env(safe-area-inset-right, 0px));
@@ -1232,8 +1188,8 @@ button.ending-badge:active {
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.15em;
-  color: var(--muted);
-  border: 1px solid var(--border);
+  color: #aaaaaa;
+  border: 1px solid #444444;
   padding: 10px 14px;
   min-height: 44px;
   min-width: 88px;
@@ -1245,7 +1201,7 @@ button.ending-badge:active {
 
 .cine-skip:active {
   opacity: 1;
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
+  background: #f0f0f0;
+  color: #0a0a0a;
+  border-color: #f0f0f0;
 }
