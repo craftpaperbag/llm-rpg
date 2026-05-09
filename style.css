@@ -1236,7 +1236,7 @@ button.ending-badge:active {
   pointer-events: none;
   transform: scale(0.95);
   opacity: 0;
-  color: #000;
+  color: #f0f0f0;
 }
 
 .cine-meteor svg {

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`llm-rpg` is **「100歩の黙示録」 (100 Steps Apocalypse)** — a Japanese-language, monochrome browser RPG about the last 100 steps before a meteor strike. It is built as a static site with **plain HTML / CSS / JS (ES Modules), no build step**. All game text and UI is in Japanese.
+`llm-rpg` is **「100歩の黙示録」 (100 Steps Apocalypse)** — a Japanese-language browser RPG about the last 100 steps before a meteor strike. It is built as a static site with **plain HTML / CSS / JS (ES Modules), no build step, no dependencies, no lockfile**. All game text and UI is in Japanese.
 
 The full design specification is in `DESIGN.md` and is the source of truth for game mechanics, scene layout, parameter formulas, ending conditions, and visual/audio design. Read it before making non-trivial changes.
 
@@ -19,23 +19,32 @@ python -m http.server 8000
 # then open http://localhost:8000/
 ```
 
-To clear saves while developing, clear `localStorage` keys `llm-rpg-save` and `llm-rpg-endings` in DevTools.
+To reset state while developing, clear these `localStorage` keys in DevTools:
+- `llm-rpg-save` — current run
+- `llm-rpg-endings` — persistent unlocked-endings list
+- `llm-rpg-theme` — `'dark'` (default) or `'light'`
 
 ## Architecture
 
-The game is a single-page state machine with three top-level screens (`#title-screen`, `#game-screen`, `#ending-screen`) toggled via inline `display`. `index.html` contains all three screen templates; `js/main.js` is the entry point loaded as `<script type="module">`.
+The game is a single-page state machine with **four** top-level screens (`#title-screen`, `#opening-cinematic`, `#game-screen`, `#ending-screen`) toggled via inline `display`. `index.html` contains all four screen templates; `js/main.js` is the entry point loaded as `<script type="module">`.
 
 ### Module responsibilities
 
-- **`js/main.js`** — boots audio, wires title-screen buttons, starts a `setInterval` that polls `state.steps` to drive the heartbeat sound.
+- **`js/main.js`** — boots theme + audio, wires title-screen buttons, awaits the opening cinematic on new game, starts a `setInterval` that polls `state.steps` to drive the heartbeat sound. Modal modules are loaded **lazily via dynamic `import()`** the first time their button is tapped.
 - **`js/state.js`** — exports a single mutable `state` object plus mutators (`addItem`, `addParam`, `setFlag`, `markVisited`, `resetState`, `loadState`). State shape: `{ steps, currentScene, items[], params{bond,nihil,wrath,hope,truth}, flags{}, visited[] }`. Note: `visited` is an array (not a `Set`) so it round-trips through `JSON.stringify` for save/load.
 - **`js/render.js`** — owns all DOM updates. `renderAll()` paints header/scene/items/effects; `handleChoice()` is the central event handler that consumes steps, runs scene actions, autosaves, triggers ending check, fades to next scene, and types out the new text. Step-dependent visual effects (meteor shadow scale, noise overlay at ≤20, shake at ≤10) are applied here in `applyEffects()`.
 - **`js/ending.js`** — iterates `endings` in array order and shows the **first** match. Order matters: the priority of endings is encoded by their position in `js/data/endings.js`, with the true ending (`truth`) first and the default lonely ending last.
 - **`js/audio.js`** — Web Audio API only, no asset files. Wind (brown noise + lowpass) starts on first user click via `resumeOnce`. Heartbeat tempo scales with remaining steps. Mute toggles a single `windGain`.
-- **`js/storage.js`** — thin `localStorage` wrapper. Two keys: `llm-rpg-save` (current run) and `llm-rpg-endings` (persistent unlock list across runs).
+- **`js/storage.js`** — thin `localStorage` wrapper. Three keys: `llm-rpg-save` (current run), `llm-rpg-endings` (persistent unlock list), `llm-rpg-theme` (`'dark' | 'light'`).
+- **`js/theme.js`** — sets `document.documentElement.dataset.theme` (`dark` / `light`) and updates `<meta name="theme-color">`. CSS variables in `style.css` switch on `html[data-theme="..."]`.
+- **`js/opening.js`** — controls `#opening-cinematic`: a ~13s meteor approach animation plus typewriter narration. Returns a `Promise` that resolves on safety timeout, narration finish, or screen/skip-button tap. `main.js` awaits it before showing `#game-screen`.
+- **`js/map.js`** — renders the map modal, mapping each scene id to a `viewBox 0–100` coordinate.
+- **`js/aboutModal.js` / `js/inventoryModal.js` / `js/charactersModal.js` / `js/settingsModal.js`** — modal UIs for 作品について / 持ち物 / 人物 / 設定 (theme + mute + 諦める). Each builds its own overlay lazily on first open.
+- **`js/version.js`** — single `VERSION` constant displayed on the title screen.
 - **`js/data/scenes.js`** — `scenes` map keyed by scene id, plus an `actions` registry and `runAction(name, state)` dispatcher. Scenes have `text(state)` and `choices(state)` as **functions** so they can react to flags/items.
 - **`js/data/endings.js`** — array of `{ id, name, category, check(state), text }`. Order = priority.
 - **`js/data/items.js`** — flat `items` map and `getItem(id)` with a fallback shape so missing ids don't crash rendering.
+- **`js/data/characters.js`** — `characters` map; `charactersModal.js` shows entries the player has met (gated by `flags`).
 
 ### Game loop
 
@@ -77,8 +86,9 @@ Endings are checked top-down by `endings.find(e => e.check(state))`. When adding
 ## Conventions
 
 - Japanese only for all player-facing strings, scene names, and ending text. Code identifiers and comments are a mix; match the surrounding file.
-- Monochrome palette only: `#0a0a0a` / `#f0f0f0` / `#666` / `#333` (defined as CSS vars in `style.css`). Do not introduce color.
+- **Theming**: the app supports light and dark modes via `html[data-theme="dark"|"light"]` data-attribute, with palettes defined as CSS variables in `style.css` (top of file). New CSS should use `var(--bg)` / `var(--fg)` rather than literal colors. Allowed literals are the monochrome set `#0a0a0a` / `#f0f0f0` / `#666` / `#333`, used only when a variable can't apply. **Exception**: `#opening-cinematic` and its descendants are intentionally theme-independent (always dark background `#0a0a0a` + light foreground `#f0f0f0` / `#fff`) — see comment around `style.css` `.cine-narration`. Adding theme-aware vars there would break the cinematic look.
 - Tap/click only — no keyboard handlers. Tap targets ≥56px tall (see `.choice-btn`).
-- No external assets. All sound is generated at runtime in `audio.js`; no fonts are bundled (system fallbacks via `'Noto Sans JP', 'Hiragino Sans', ...`).
+- No external assets and no dependencies. All sound is generated at runtime in `audio.js`; no fonts are bundled (system fallbacks via `'Noto Sans JP', 'Hiragino Sans', ...`).
 - Mobile-first: layout is centered with `max-width: 480px`, uses `100dvh` and `env(safe-area-inset-*)`. Test changes in a narrow viewport.
 - Audio must never play before the first user gesture — `AudioContext.resume()` happens in a one-shot click handler.
+- Modals are imported on demand via `import('./xxxModal.js')`; keep them self-contained (own overlay element, own build/teardown) so dynamic loading stays cheap.
