@@ -1,10 +1,10 @@
 import { state, markVisited } from './state.js';
 import { scenes, runAction } from './data/scenes.js';
 import { getItem } from './data/items.js';
+import { getMetCharacters } from './data/characters.js';
 import { checkEnding } from './ending.js';
 import { playClick } from './audio.js';
 import { saveGame } from './storage.js';
-import { openItemModal } from './itemModal.js';
 
 const elStepsCount = document.getElementById('steps-count');
 const elStepsFill  = document.getElementById('steps-fill');
@@ -12,7 +12,8 @@ const elSceneFade  = document.getElementById('scene-fade');
 const elSceneName  = document.getElementById('scene-name');
 const elSceneText  = document.getElementById('scene-text');
 const elChoices    = document.getElementById('choices-area');
-const elItemsScroll= document.getElementById('items-scroll');
+const elInventoryCount  = document.getElementById('inventory-count');
+const elCharactersCount = document.getElementById('characters-count');
 const elToastArea  = document.getElementById('item-toast-area');
 
 let typewriterId = 0;
@@ -126,27 +127,8 @@ function renderResultMode(beats) {
 }
 
 function renderItems() {
-  elItemsScroll.innerHTML = '';
-  if (state.items.length === 0) {
-    const empty = document.createElement('span');
-    empty.className = 'items-empty';
-    empty.textContent = '所持品なし';
-    elItemsScroll.appendChild(empty);
-    return;
-  }
-  state.items.forEach(id => {
-    const item = getItem(id);
-    const chip = document.createElement('button');
-    chip.className = 'item-chip';
-    chip.type = 'button';
-    chip.setAttribute('aria-label', `${item.name}の詳細を見る`);
-    chip.textContent = `${item.icon} ${item.name}`;
-    chip.addEventListener('click', () => {
-      playClick();
-      openItemModal(id);
-    });
-    elItemsScroll.appendChild(chip);
-  });
+  elInventoryCount.textContent = `(${state.items.length})`;
+  elCharactersCount.textContent = `(${getMetCharacters(state).length})`;
 }
 
 function showItemToast(id) {

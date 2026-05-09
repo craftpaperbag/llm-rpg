@@ -75,7 +75,14 @@
       </div>
       <div id="choices-area" class="choices-area"></div>
       <div id="items-area" class="items-area">
-        <div id="items-scroll" class="items-scroll"></div>
+        <button id="btn-inventory" class="bottom-btn" type="button" aria-label="持ち物を開く">
+          <span class="bottom-btn-label">持ち物</span>
+          <span id="inventory-count" class="bottom-btn-count">(0)</span>
+        </button>
+        <button id="btn-characters" class="bottom-btn" type="button" aria-label="人物を開く">
+          <span class="bottom-btn-label">人物</span>
+          <span id="characters-count" class="bottom-btn-count">(0)</span>
+        </button>
       </div>
     </main>
     <div id="item-toast-area" class="item-toast-area" aria-live="polite" aria-atomic="true"></div>
