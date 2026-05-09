@@ -24,6 +24,8 @@ function setupTitleScreen() {
   if (unlocked.length > 0) {
     const endingsSection = document.getElementById('unlocked-endings');
     endingsSection.style.display = '';
+    endingsSection.querySelector('.endings-label').textContent =
+      `解放済みエンディング ${unlocked.length} / ${endings.length}`;
     const grid = document.getElementById('endings-grid');
     grid.innerHTML = '';
     unlocked.forEach(id => {
