@@ -259,6 +259,17 @@ async function handleChoice(choice) {
   await renderResultMode(resultPayload);
 }
 
+export async function giveUp() {
+  if (state.steps <= 0) return;
+  lockChoices();
+  state.steps = 0;
+  saveGame(state);
+  renderHeader();
+  applyEffects();
+  await fadeTransition();
+  checkEnding(state);
+}
+
 async function typewriterText(el, text, speed = 22) {
   const myId = ++typewriterId;
   el.textContent = '';
