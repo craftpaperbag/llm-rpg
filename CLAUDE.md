@@ -24,6 +24,10 @@ To reset state while developing, clear these `localStorage` keys in DevTools:
 - `llm-rpg-endings` — persistent unlocked-endings list
 - `llm-rpg-theme` — `'dark'` (default) or `'light'`
 
+## CI
+
+`.github/workflows/bump-version.yml` auto-bumps the patch in `js/version.js` on every push to `main` and commits it back with `[skip ci]`. Add `[skip ci]` to your commit subject to suppress the bump (e.g. for docs-only changes).
+
 ## Architecture
 
 The game is a single-page state machine with **four** top-level screens (`#title-screen`, `#opening-cinematic`, `#game-screen`, `#ending-screen`) toggled via inline `display`. `index.html` contains all four screen templates; `js/main.js` is the entry point loaded as `<script type="module">`.
@@ -69,7 +73,8 @@ sceneId: {
   choices: (s) => [
     { label: 'ラベル', cost: 3, next: 'nextScene', action: 'actionName',
       if: (s) => s.items.includes('foo'),   // gate visibility
-      hidden: s.flags.alreadyDone },        // also hides
+      hidden: s.flags.alreadyDone,          // also hides
+      result: () => `タップ直後に表示する本文` }, // optional; see below
   ],
 }
 ```
@@ -77,7 +82,9 @@ sceneId: {
 - `cost` is integer steps consumed; choices with `state.steps < cost` render disabled (do not gate them with `if`, the renderer handles it).
 - `action` must exist as a key in the `actions` registry at the top of `scenes.js`.
 - `next: 'sameScene'` re-renders in place after running the action — useful for "examine" choices.
+- **`result` field**: when present (typically on stay-in-scene choices), `render.js` enters `renderResultMode` after running the action: it overrides the scene body with the result text and replaces the choice list with a single auto-paginated 「次へ」 / 「続き (n/total)」 button. `result` may return either a single string (one beat) or an array of strings (multiple beats, paginated). After the last beat the player taps 「次へ」 and the scene re-renders normally (so updated `text(state)` and `choices(state)` reflect any flags the action set). Use this to show narrative beats without leaving the scene.
 - Hidden params (`bond`, `nihil`, `wrath`, `hope`, `truth`) are set only via `addParam` inside actions; they must remain invisible to the player.
+- Action functions receive the state as their argument but in practice mutate the imported `state` singleton from `state.js` via `setFlag` / `addParam` / `addItem`. Don't reassign properties on the argument — use the helpers.
 
 ### Ending authoring conventions
 

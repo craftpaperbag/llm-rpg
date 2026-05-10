@@ -11,8 +11,15 @@ const actions = {
     addItem('photo');
     addParam('bond');
   },
-  checkPC(s) {
-    setFlag('checkedPC');
+  checkPC1(s) {
+    setFlag('pcStage', 1);
+  },
+  checkPC2(s) {
+    setFlag('pcStage', 2);
+    addParam('truth');
+  },
+  checkPC3(s) {
+    setFlag('pcStage', 3);
     addParam('truth');
   },
   buyBeer(s) {
@@ -41,9 +48,18 @@ const actions = {
     addParam('hope', 2);
     addParam('bond');
   },
-  talkClassmate(s) {
+  talkKanata1(s) {
+    setFlag('kanataStage', 1);
+    addParam('bond');
+  },
+  talkKanata2(s) {
+    setFlag('kanataStage', 2);
+    addParam('bond');
+  },
+  talkKanata3(s) {
+    setFlag('kanataStage', 3);
     setFlag('metClassmate');
-    addParam('bond', 2);
+    addParam('bond');
   },
   checkYearbook(s) {
     addParam('truth');
@@ -150,6 +166,9 @@ const actions = {
   yell(s) {
     addParam('wrath');
   },
+  ponderMeteor(s) {
+    addParam('truth');
+  },
 };
 
 export function runAction(name, s) {
@@ -181,7 +200,7 @@ export const scenes = {
 テレビは隕石のニュースを延々と流している。${
   s.flags.checkedFridge ? '\n冷蔵庫はもう空だ。' : ''
 }${
-  s.flags.checkedPC ? '\n画面にはNASAの軌道データが表示されたままだ。' : ''
+  (s.flags.pcStage | 0) >= 1 ? '\n画面にはNASAの軌道データが表示されたままだ。' : ''
 }`,
     choices: (s) => [
       { label: 'ベランダに出る', cost: 1, next: 'apartment_balcony' },
@@ -190,19 +209,44 @@ export const scenes = {
         result: () => `冷気が漏れる音だけがする。
 中はもう空だった。賞味期限の切れたヨーグルトが一つ。
 それも要らないと思った。` },
-      { label: 'PCで隕石情報を調べる', cost: 2, action: 'checkPC', next: 'apartment',
-        hidden: s.flags.checkedPC,
+      { label: 'PCで隕石情報を調べる', cost: 1, action: 'checkPC1', next: 'apartment',
+        hidden: (s.flags.pcStage | 0) !== 0,
         result: () => [
-          `NASAの軌道データを開く。数字は冷静で、結論は冷酷だった。
+          `電源を入れた。HDDが軋む音、ファンが回り始める音。
+机の埃が薄く積もっているのに気づいた。
+最後にこのPCに触ったのは、いつだったろう。`,
+          `ブラウザを開く。ホームはニュースサイトで止まっていた。
+速報の見出しが点滅している。「衝突予測時刻 23:47」。
+キーボードに置いた指先が、自分のものでないように冷たい。`,
+          `NASAの軌道データページを呼び出す。数字は冷静で、結論は冷酷だった。
 誤差範囲はもうない。
-画面の青白い光が、部屋を照らしている。`,
-          `ページを下にスクロールすると、観測ログのコメント欄に妙な書き込みがあった。
+画面の青白い光が、部屋の壁を照らしている。`,
+        ] },
+      { label: 'コメント欄を遡る', cost: 1, action: 'checkPC2', next: 'apartment',
+        hidden: (s.flags.pcStage | 0) !== 1,
+        result: () => [
+          `ページをスクロールしていく。
+コメント欄は荒れていた。怒り、嘆き、デマ、それから黒いユーモア。
+そのどれもが、もう意味をなさない言葉のように見えた。`,
+          `スクロールの途中、目が止まった。
 「軌道予測の誤差が小さすぎる。0.0000000000017秒——」
-書き込みは深夜2時、すでに削除依頼が出されていた。`,
-          `コメント欄をさらに遡る。
-似たような書き込みが、過去の隕石記事にもあった。
-ツングースカ、シホテアリン、吉林、チェリャビンスク——
-そのどれもが、同じように、誰かの手で削除されていた。`,
+途中で文章は切れていた。投稿者名は「.」一文字。`,
+          `タイムスタンプを確認する。
+書き込みは深夜2時、削除依頼が2時03分、実際の削除が2時04分。
+誰かが、起きていた。誰かが、急いでいた。`,
+        ] },
+      { label: '過去の隕石記事と照合する', cost: 1, action: 'checkPC3', next: 'apartment',
+        hidden: (s.flags.pcStage | 0) !== 2,
+        result: () => [
+          `検索バーに「ツングースカ」と打ち込む。
+古い記事が並ぶ。コメント欄を開く。
+似たような書き込みが、同じように、消えていた。`,
+          `シホテアリン、吉林、チェリャビンスク——
+タブを増やしていく。画面が記事で埋まる。
+どの記事のコメント欄でも、同じパターンの削除が起きていた。`,
+          `背中を冷たいものが伝った。
+これは偶然ではない。誰かが、何十年もかけて、
+気づいた人間を、ひとりずつ、消してきた。`,
         ] },
       { label: s.flags.noteOpened ? 'LINEを読み返す' : '母からの未読LINEを開く',
         cost: 1, action: 'openNote', next: 'apartment',
@@ -380,25 +424,51 @@ ${s.flags.tsubakiLeft
     name: '母校',
     text: (s) => `鉄製のフェンスが半開きになっている。校庭に入れた。
 桜が咲いている。このタイミングで咲いている。${
-  s.flags.metClassmate
+  (s.flags.kanataStage | 0) >= 3
     ? '\nカナタの姿はもう見えない。でも何か残った気がする。'
-    : '\n遠くにカナタの後ろ姿がある。'
+    : (s.flags.kanataStage | 0) >= 1
+      ? '\nカナタは桜の下に立っている。'
+      : '\n遠くにカナタの後ろ姿がある。'
 }`,
     choices: (s) => [
-      { label: 'カナタに声をかける', cost: 3, action: 'talkClassmate', next: 'school',
-        hidden: s.flags.metClassmate,
+      { label: 'カナタに声をかける', cost: 1, action: 'talkKanata1', next: 'school',
+        hidden: (s.flags.kanataStage | 0) !== 0,
         result: () => [
           `校庭の真ん中で、カナタは桜を見上げていた。
-名前を呼ぶと、肩がぴくっと動いた。
-振り向いた顔は、少し驚いていて、それからゆっくりと笑った。
-「久しぶりだね」`,
+背筋が、昔より少しだけ丸かった。
+それでも、桜の下に立つ姿は、二十年前と同じ輪郭だった。`,
+          `名前を呼んでみた。声が、思ったより掠れた。
+カナタの肩がぴくっと動いた。
+ゆっくりと、ゆっくりと振り向いた。`,
+          `振り向いた顔は、少し驚いていて、それからゆっくりと笑った。
+「久しぶりだね」
+そう言った声が、不思議なほど、昔のままだった。`,
+        ] },
+      { label: '桜の話をする', cost: 1, action: 'talkKanata2', next: 'school',
+        hidden: (s.flags.kanataStage | 0) !== 1,
+        result: () => [
           `何年ぶりだろう、という会話を、お互いしなかった。
-代わりに、桜の話をした。今年の桜は早い、ということ。
-「終わるのに咲くなんて、馬鹿みたいだよね」とカナタが言った。
+「元気だった?」も「結婚した?」も、誰も聞かなかった。
+代わりに、桜の話をした。今年の桜は早い、ということ。`,
+          `「終わるのに咲くなんて、馬鹿みたいだよね」
+カナタが言った。風で前髪が揺れていた。
 「うん」と頷いた。馬鹿みたいなのは、桜だけじゃないと思った。`,
-          `風が吹いた。花びらが二人の間を流れていった。
-カナタは目を閉じて、深く息を吸った。
-言いそびれていた言葉が、喉のあたりで温まっている気がした。`,
+          `「そういえば」と話を変えようとして、やめた。
+「そういえば」の続きを、お互いが知っているような気がした。
+だから、しばらく、二人とも黙っていた。`,
+        ] },
+      { label: '黙って隣に立つ', cost: 1, action: 'talkKanata3', next: 'school',
+        hidden: (s.flags.kanataStage | 0) !== 2,
+        result: () => [
+          `風が吹いた。強い風だった。
+花びらが二人の間を、紙吹雪のように流れていった。
+カナタは目を閉じて、深く息を吸った。`,
+          `何か言おうとして、息を継いだ。
+言葉は、喉のあたりで温まったまま、出てこなかった。
+出さなくていい、と自分に言い聞かせた。`,
+          `気がつくと、二人とも、黙って桜を見上げていた。
+カナタの手が、自分の手のすぐ隣で、握られたり開いたりしていた。
+触れる距離は、もうとっくに、なかった。`,
         ] },
       { label: '卒業アルバムを探す', cost: 2, action: 'checkYearbook', next: 'school',
         if: (s) => s.items.includes('photo'),
@@ -690,7 +760,7 @@ I(s) = I₀ ∀s。
 何を喜んでいるのか、悲しんでいるのか、ここからではわからない。
 ただ、人の声がする街の上にいることを、はじめて意識した。`,
         ] },
-      { label: '隕石について考える', cost: 2, action: 'checkPC', next: 'rooftop',
+      { label: '隕石について考える', cost: 2, action: 'ponderMeteor', next: 'rooftop',
         result: () => `あれは何メートルあるのだろう。
 ぶつかる速度は、秒速何キロなのだろう。
 考えても何も変わらないが、考え続けた。` },

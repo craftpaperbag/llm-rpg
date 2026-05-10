@@ -33,7 +33,7 @@ export const characters = {
     description: `母校の校庭で、ひとり桜を見上げていたかつての同級生。
 「終わるのに咲くなんて、馬鹿みたいだよね」と笑った。
 卒業アルバムには「またね」と書いていた人。`,
-    met: (s) => !!s.flags.metClassmate,
+    met: (s) => (s.flags.kanataStage | 0) >= 1,
   },
   haru: {
     id: 'haru',
