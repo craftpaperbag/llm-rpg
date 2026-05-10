@@ -71,6 +71,7 @@ const actions = {
   },
   stealBoss(s) {
     setFlag('looted');
+    addItem('stolen_cash');
     addParam('wrath', 2);
   },
   meditate(s) {
