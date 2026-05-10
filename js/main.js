@@ -47,7 +47,7 @@ function setupTitleScreen() {
     document.getElementById('title-screen').style.display = 'none';
     const { playOpeningCinematic } = await import('./opening.js');
     await playOpeningCinematic();
-    startGame({ typewriter: true });
+    startGame({ typewriter: true, fadeIn: true, typewriterDelay: 1200 + 1500 });
   });
 
   btnContinue.addEventListener('click', () => {
@@ -79,9 +79,15 @@ function setupTitleScreen() {
 }
 
 // ─── ゲーム開始 ─────────────────────────────────────
-function startGame({ typewriter = false } = {}) {
+function startGame({ typewriter = false, fadeIn = false, typewriterDelay = 0 } = {}) {
   document.getElementById('title-screen').style.display = 'none';
-  document.getElementById('game-screen').style.display = 'flex';
+  const gameScreen = document.getElementById('game-screen');
+  gameScreen.style.display = 'flex';
+  if (fadeIn) {
+    gameScreen.classList.remove('screen-fade-in');
+    void gameScreen.offsetWidth;
+    gameScreen.classList.add('screen-fade-in');
+  }
 
   // 設定ボタン (テーマ・音声トグル)
   document.getElementById('btn-settings').addEventListener('click', () => {
@@ -108,5 +114,5 @@ function startGame({ typewriter = false } = {}) {
     startHeartbeat(state.steps);
   }, 2000);
 
-  renderAll({ typewriter });
+  renderAll({ typewriter, typewriterDelay });
 }
