@@ -19,10 +19,10 @@ const elToastArea  = document.getElementById('item-toast-area');
 let typewriterId = 0;
 let uiMode = 'normal'; // 'normal' | 'result'
 
-export function renderAll({ typewriter = false } = {}) {
+export function renderAll({ typewriter = false, typewriterDelay = 0 } = {}) {
   uiMode = 'normal';
   renderHeader();
-  renderScene({ typewriter });
+  renderScene({ typewriter, typewriterDelay });
   renderItems();
   applyEffects();
 }
@@ -39,15 +39,24 @@ function renderHeader() {
   }
 }
 
-function renderScene({ typewriter = false } = {}) {
+function renderScene({ typewriter = false, typewriterDelay = 0 } = {}) {
   const scene = scenes[state.currentScene];
   if (!scene) return;
 
   elSceneName.textContent = `[${scene.name}]`;
+  const text = scene.text(state).trim();
   if (typewriter) {
-    typewriterText(elSceneText, scene.text(state).trim());
+    elSceneText.textContent = '';
+    if (typewriterDelay > 0) {
+      const myId = ++typewriterId;
+      setTimeout(() => {
+        if (typewriterId === myId) typewriterText(elSceneText, text);
+      }, typewriterDelay);
+    } else {
+      typewriterText(elSceneText, text);
+    }
   } else {
-    elSceneText.textContent = scene.text(state).trim();
+    elSceneText.textContent = text;
   }
 
   renderChoices(scene);

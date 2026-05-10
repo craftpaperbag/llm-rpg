@@ -1,6 +1,7 @@
 // オープニング・シネマティック制御
-// ・暗黒の空に隕石がゆっくり巨大化していく13秒の演出
-// ・3〜4行のナレーションを順次タイプライター表示
+// ・暗黒の空に隕石がゆっくり巨大化していく18秒の演出
+// ・3〜4行のナレーションを順次タイプライター表示（最終行は余韻フェードアウトに残す）
+// ・ナレーション完了後、隕石とナレーションを共にゆっくりフェードアウトして余韻を残す
 // ・画面/スキップボタンのタップで早期終了 → Promise resolve
 
 const NARRATION = [
@@ -10,7 +11,8 @@ const NARRATION = [
   'そして今夜、空が落ちてくる。',
 ];
 
-const SAFETY_TIMEOUT_MS = 16000;
+const SAFETY_TIMEOUT_MS = 22000;
+const FINAL_FADE_MS = 1500;
 
 export function playOpeningCinematic() {
   return new Promise(resolve => {
@@ -40,7 +42,10 @@ export function playOpeningCinematic() {
       cancelNarration = true;
       timers.forEach(clearTimeout);
       meteor.classList.remove('cine-falling');
+      meteor.style.transform = '';
+      meteor.style.opacity = '';
       root.classList.remove('cine-visible');
+      root.classList.remove('cine-fading-out');
       root.style.display = 'none';
       root.setAttribute('aria-hidden', 'true');
       narrEl.innerHTML = '';
@@ -58,24 +63,37 @@ export function playOpeningCinematic() {
     root.addEventListener('click', onTap);
     skipBtn.addEventListener('click', onSkip);
 
-    runNarration(narrEl, NARRATION, () => cancelNarration).then(() => {
-      // ナレーション完了後、隕石アニメ完走を少し待って自動終了
-      timers.push(setTimeout(finish, 1500));
+    runNarration(narrEl, NARRATION, () => cancelNarration).then(async () => {
+      // ナレーション最終行が画面に残っている状態 → 余韻を経て隕石とともにフェードアウト
+      if (cancelNarration) return;
+      await sleep(600);
+      if (cancelNarration) return;
+      // 隕石アニメを停止しつつ現在の transform/opacity をインラインに固定
+      const cs = window.getComputedStyle(meteor);
+      meteor.style.transform = cs.transform;
+      meteor.style.opacity = cs.opacity;
+      meteor.classList.remove('cine-falling');
+      void meteor.offsetWidth;
+      root.classList.add('cine-fading-out');
+      timers.push(setTimeout(finish, FINAL_FADE_MS));
     });
 
-    // 安全弁: 最大16秒で必ず終了
+    // 安全弁: 最大22秒で必ず終了
     timers.push(setTimeout(finish, SAFETY_TIMEOUT_MS));
   });
 }
 
 async function runNarration(container, lines, isCancelled) {
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
     if (isCancelled()) return;
+    const line = lines[i];
+    const isLast = (i === lines.length - 1);
     const el = document.createElement('div');
     el.className = 'cine-line';
     container.appendChild(el);
     await typewriter(el, line, 70, isCancelled);
     if (isCancelled()) return;
+    if (isLast) return; // 最終行は余韻フェードアウトで消すため残す
     await sleep(1400);
     if (isCancelled()) return;
     el.classList.add('fade-out');
