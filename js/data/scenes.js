@@ -542,6 +542,7 @@ ${s.flags.tsubakiLeft
     },
     choices: (s) => [
       { label: '瞑想する', cost: 3, action: 'meditate', next: 'shrine',
+        hidden: s.flags.meditatedThrice,
         result: (st) => {
           const n = (st.flags.meditateCount || 0); // この時点で既にインクリメント済み
           if (n <= 1) {
