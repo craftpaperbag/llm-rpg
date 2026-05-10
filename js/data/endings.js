@@ -141,7 +141,7 @@ export const endings = [
     name: '無',
     category: 'END 5 — 達観エンド',
     check: s =>
-      s.flags.meditatedThrice &&
+      (s.flags.meditatedThrice || s.flags.joinedCult) &&
       s.params.nihil >= 4,
     text: `神社の境内は、静かだった。
 
@@ -174,7 +174,7 @@ export const endings = [
     category: 'END 6 — 狂気エンド',
     check: s =>
       s.params.wrath >= 3 &&
-      s.flags.looted,
+      (s.flags.looted || s.flags.confrontedPreacher),
     text: `コンビニのレジから一万円を抜き取ったとき、
 主人公は妙に清々しい気持ちになっていた。
 

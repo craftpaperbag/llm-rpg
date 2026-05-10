@@ -152,8 +152,21 @@ const actions = {
     setFlag('seenDot');
     setFlag('tsubakiLeft');
   },
-  talkPreacher(s) {
+  agreePreacher(s) {
+    addParam('nihil', 2);
+    setFlag('joinedCult');
+    setFlag('preacherDone');
+  },
+  confrontPreacher(s) {
+    addParam('wrath', 2);
+    setFlag('confrontedPreacher');
+    setFlag('preacherDone');
+  },
+  listenPreacher(s) {
+    addParam('truth');
     addParam('nihil');
+    setFlag('seenPreacherBreak');
+    setFlag('preacherDone');
   },
   talkDog(s) {
     addParam('bond');
@@ -393,15 +406,46 @@ ${s.flags.tsubakiLeft
     id: 'station',
     name: '駅前ロータリー',
     text: (s) => `人がまばらに座り込んでいる。空には赤い光の筋が走っている。
-誰かが「神の怒りだ！」と演説している。
+${s.flags.preacherDone
+  ? '演説者の前を通り過ぎる。もう、声を張り上げてはいない。'
+  : '誰かが「神の怒りだ！」と演説している。'}
 タクシーは全部捕まらない。${
   s.flags.foundDog ? '\n迷子の犬はもう飼い主のもとに帰った。' : ''
 }`,
     choices: (s) => [
-      { label: '演説する人に話しかける', cost: 2, action: 'talkPreacher', next: 'station',
-        result: () => `「あなたも罪を悔い改めなさい!」
-拡声器越しの声が、耳に刺さる。
-何の罪のことだろう、と少しだけ考えた。` },
+      { label: '「あなたが正しい」と頷く', cost: 2, action: 'agreePreacher', next: 'station',
+        hidden: s.flags.preacherDone,
+        result: () => [
+          `男の目が一瞬だけ、こちらを見た。
+焦点が、ほんの少しずれていた。瞳の奥は、空っぽだった。`,
+          `「そう、そうなんだ」と男は何度も頷いた。
+拡声器を握る指が、白くなるほど力んでいた。`,
+          `「あなたも来なさい。終わりまで、一緒に唱えるんだ」
+何かに追いつかれそうな声だった。
+頷き返してから、自分が何に頷いたのか、もうわからなくなっていた。`,
+        ] },
+      { label: '「神の怒りなんかじゃない」と反論する', cost: 3, action: 'confrontPreacher', next: 'station',
+        hidden: s.flags.preacherDone,
+        result: () => [
+          `男の声が止まった。
+拡声器のスイッチが切れる、小さな音がした。`,
+          `「……うるさい」
+素の声だった。子供のように、低く震えていた。`,
+          `「俺だって怖いんだよ! こうしてないと、立ってられないんだよ!」
+周りの誰も、振り向かなかった。
+言ってしまったあとの自分の口の中が、ざらりと乾いていた。`,
+        ] },
+      { label: '黙って演説を聞き続ける', cost: 3, action: 'listenPreacher', next: 'station',
+        hidden: s.flags.preacherDone,
+        result: () => [
+          `男の演説は、何度も同じ箇所で詰まった。
+罪、悔い改め、罪、悔い改め。`,
+          `拡声器を持つ手が、少しずつ下がっていく。
+声が、だんだん細くなっていく。`,
+          `ふいに男は黙って、空を見上げた。
+何も言わずに、ただ、見上げていた。
+拡声器越しの叫びより、その沈黙のほうが、ずっと長く耳に残った。`,
+        ] },
       { label: '迷子の犬を保護する', cost: 2, action: 'talkDog', next: 'station',
         hidden: s.flags.foundDog,
         result: () => `首輪に名前があった。「ハル」と書いてあった。
